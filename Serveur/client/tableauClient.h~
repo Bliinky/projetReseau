@@ -1,0 +1,10 @@
+#ifndef TABLEAUCLIENT_H
+#define TABLEAUCLIENT_H
+
+
+class tableauClient
+{
+
+}
+
+#endif
