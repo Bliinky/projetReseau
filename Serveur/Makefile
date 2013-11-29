@@ -1,8 +1,10 @@
 CC=g++
 CFLAGS=-g
 
-Serveur: principal.o Serveur.o donneeClient.o tableauClient.o sock.o sockdist.o
-	$(CC) -o Serveur principal.o Serveur.o donneeClient.o tableauClient.o sock.o sockdist.o
+
+
+Serveur: principal.o Serveur.o DonneeClient.o TableauClient.o sock.o sockdist.o
+	$(CC) -o Serveur principal.o Serveur.o DonneeClient.o TableauClient.o sock.o sockdist.o
 
 principal.o: principal.cc
 	$(CC) $(CFLAGS) -c principal.cc
@@ -10,11 +12,11 @@ principal.o: principal.cc
 Serveur.o: Serveur.cc
 	$(CC) $(CFLAGS) -c Serveur.cc
 
-client/donneeClient.o: client/donneeClient.cc
-	$(CC) $(CFLAGS) -c client/donneeClient.cc
+DonneeClient.o: clientData/DonneeClient.cc
+	$(CC) $(CFLAGS) -c clientData/DonneeClient.cc
 
-client/tableauClient.o: client/tableauClient.cc
-	$(CC) $(CFLAGS) -c client/tableauClient.cc
+TableauClient.o: clientData/TableauClient.cc
+	$(CC) $(CFLAGS) -c clientData/TableauClient.cc
 
 sock.o: sock.cc
 	$(CC) $(CFLAGS) -c sock.cc
@@ -23,3 +25,5 @@ sockdist.o: sockdist.cc
 	$(CC) $(CFLAGS) -c sockdist.cc
 
 
+clean: 
+	rm -rf *~ *.o

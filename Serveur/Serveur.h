@@ -3,6 +3,10 @@
 
 class Serveur
 {
+ private:
+  TableauClient donneeClients;
+  
+ public:
   
 };
 
