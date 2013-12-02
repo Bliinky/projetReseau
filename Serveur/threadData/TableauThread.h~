@@ -1,0 +1,11 @@
+#ifndef TABLEAUTHREAD_H
+#define TABLEAUTHREAD_H
+
+class TableauThread
+{
+ private:
+  vector<DonneeThread> donnee;
+ public:
+};
+
+#endif

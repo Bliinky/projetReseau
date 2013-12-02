@@ -1,9 +1,4 @@
 #include <iostream>
 using namespace std;
 
-#include "Serveur.h"
-
-int main()
-{
-
-}
+#include "DonneThread.h"

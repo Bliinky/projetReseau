@@ -1,0 +1,11 @@
+#ifndef DONNEETHREAD_H
+#define DONNEETHREAD_H
+
+class DonneeThread
+{
+ private:
+  pthread_t t;
+  int descClient;
+ public:
+  
+}

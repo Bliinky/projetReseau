@@ -3,8 +3,20 @@ CFLAGS=-g
 
 
 
-Serveur: principal.o Serveur.o DonneeClient.o TableauClient.o sock.o sockdist.o
-	$(CC) -o Serveur principal.o Serveur.o DonneeClient.o TableauClient.o sock.o sockdist.o
+Serveur: DonneeThread.o TableauThread.o DonneeClient.o TableauClient.o sock.o sockdist.o principal.o Serveur.o 
+	$(CC) -o Serveur principal.o Serveur.o DonneeClient.o TableauClient.o sock.o sockdist.o DonneeThread.o TableauThread.o -lpthread
+
+DonneeThread.o: threadData/DonneeThread.cc
+	$(CC) $(CFLAGS) -c threadData/DonneeThread.cc
+
+TableauThread.o: threadData/TableauThread.cc
+	$(CC) $(CFLAGS) -c threadData/TableauThread.cc
+
+DonneeClient.o: clientData/DonneeClient.cc
+	$(CC) $(CFLAGS) -c clientData/DonneeClient.cc
+
+TableauClient.o: clientData/TableauClient.cc 
+	$(CC) $(CFLAGS) -c clientData/TableauClient.cc 
 
 principal.o: principal.cc
 	$(CC) $(CFLAGS) -c principal.cc
@@ -12,17 +24,12 @@ principal.o: principal.cc
 Serveur.o: Serveur.cc
 	$(CC) $(CFLAGS) -c Serveur.cc
 
-DonneeClient.o: clientData/DonneeClient.cc
-	$(CC) $(CFLAGS) -c clientData/DonneeClient.cc
 
-TableauClient.o: clientData/TableauClient.cc
-	$(CC) $(CFLAGS) -c clientData/TableauClient.cc
+sock.o: reseau/sock.cc
+	$(CC) $(CFLAGS) -c reseau/sock.cc
 
-sock.o: sock.cc
-	$(CC) $(CFLAGS) -c sock.cc
-
-sockdist.o: sockdist.cc
-	$(CC) $(CFLAGS) -c sockdist.cc
+sockdist.o: reseau/sockdist.cc
+	$(CC) $(CFLAGS) -c reseau/sockdist.cc
 
 
 clean: 
