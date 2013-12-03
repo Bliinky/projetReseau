@@ -31,7 +31,6 @@ Serveur::Serveur()
   else{cout<<"Probleme initialisation de la socket"<<endl; 
     exit(-1);}
   listen(descBrPublic,100);
-  donneeClients.verrou_init();
 }
 Serveur::~Serveur()
 {

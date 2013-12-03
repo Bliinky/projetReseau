@@ -10,7 +10,7 @@ using namespace std;
 #include "sock.h"
 
 /////////////////////////////////////////////////////////////////
-//rempli le triplet ‡ partir du nom de service et protocole
+//rempli le triplet √† partir du nom de service et protocole
 int Sock::sockaddLocRempli( const char * nomServ, const char *protoServ){
 
    struct servent *srv; /* pour recuperer les param du service */
@@ -24,12 +24,12 @@ int Sock::sockaddLocRempli( const char * nomServ, const char *protoServ){
      cout <<nomServ<< "non trouve dans services\n";
      exit (0);
       }
-   adrSock.sin_port = srv->s_port; /* numero de port trouvÈ */
+   adrSock.sin_port = srv->s_port; /* numero de port trouv√© */
    return sizeof(adrSock);
 }
 
 /////////////////////////////////////////////////////////////////
-//rempli le triplet ‡ partir du numÈro de port
+//rempli le triplet √† partir du num√©ro de port
 int Sock::sockaddLocRempli( short numPort){
 
    adrSock.sin_family = sDom;
@@ -41,7 +41,7 @@ int Sock::sockaddLocRempli( short numPort){
 }
 
 /////////////////////////////////////////////////////////////////
-//liaison structure interne (programme) et externe (systËme)
+//liaison structure interne (programme) et externe (syst√®me)
 int Sock::bind(int desc, const char * nomServ, const char *protoServ){
    int lg = sockaddLocRempli(nomServ, protoServ);
    if ((sRetour=::bind(desc,(struct sockaddr *)&adrSock,lg))<0)
@@ -49,7 +49,7 @@ int Sock::bind(int desc, const char * nomServ, const char *protoServ){
 }
 
 /////////////////////////////////////////////////////////////////
-//comme la prÈcÈdente avec le numÈro de port
+//comme la pr√©c√©dente avec le num√©ro de port
 int Sock::bind(int desc, short nport){
   int lg = sockaddLocRempli(nport);
 if ((sRetour=::bind(desc,(struct sockaddr *)&adrSock,lg))<0)
@@ -57,7 +57,7 @@ if ((sRetour=::bind(desc,(struct sockaddr *)&adrSock,lg))<0)
 }
 
 /////////////////////////////////////////////////////////////////
-//initialisation, surtout pour un Èventuel Èlargissement des mÈthodes
+//initialisation, surtout pour un √©ventuel √©largissement des m√©thodes
 void Sock::initparam(){
   sRetour=-1;
 }
@@ -77,7 +77,6 @@ Sock::Sock(int tip, int protocole)
   char port[10];
   file.getline(port,6);
   int nport = atoi(port);
-  cout<<nport<<endl;
   
   if ((sDesc=socket(sProto, tip, protocole))<0) perror("pb socket");
   else bind(sDesc, (short)nport);

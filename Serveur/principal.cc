@@ -12,6 +12,8 @@ using namespace std;
 
 int main()
 {
-
+  Serveur* s = new Serveur();
+  s->init_serveur();
+  delete s;
   return 0;
 }

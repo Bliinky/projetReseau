@@ -3,13 +3,15 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
- 
+#include <netinet/in.h>
 using namespace std;
 
 #include "DonneeClient.h"
 #include "TableauClient.h"
 
-TableauClient::TableauClient(){}
+TableauClient::TableauClient(){
+  verrou_init();
+}
 
 TableauClient::~TableauClient()
 {
@@ -30,7 +32,7 @@ DonneeClient* TableauClient::getDonnee(unsigned short int rang)
 {
   return donnee[rang];
 }
-pthread_mutex_t TableauClient::getVerrou()
+pthread_mutex_t& TableauClient::getVerrou()
 {
   return verrou;
 }

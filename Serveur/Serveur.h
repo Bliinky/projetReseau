@@ -19,7 +19,7 @@ class Serveur
    *\param desc Le descripteur du client
    * \return L'id du thread
    */
-  pthread_t creationThreadClient(int);
+  pthread_t creationThreadClient(int,struct sockaddr_in&);
  public:
   /**
    * Constructeur permettant de créer la socket et un TableauClient contenant l'ensemble des informations des clients connue par le Serveur

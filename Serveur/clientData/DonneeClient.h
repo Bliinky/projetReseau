@@ -4,25 +4,25 @@
 class DonneeClient
 {
  private:
-  char* ip;
-  short port;
+  in_addr ip;
+  int port;
  public:
   //Constructeur
   /**
      Création d'un ensemble de donnée d'un client
   */
-  DonneeClient(char*,short);
+  DonneeClient(in_addr,int);
   /**
      Détruis l'ensemble des informations du client
   */
   ~DonneeClient();
   
   //Assceseurs
-  char* getIp();
-  short getPort();
+  in_addr getIp();
+  int getPort();
   char* getPortIp();
-  void setIp(char*);
-  void setPort(short);
+  void setIp(in_addr);
+  void setPort(int);
 };
 
 

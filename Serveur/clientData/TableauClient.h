@@ -29,7 +29,7 @@ class TableauClient
    * \return Les informations du client recherché
 
    */
-  pthread_mutex_t getVerrou();
+  pthread_mutex_t& getVerrou();
   DonneeClient* getDonnee(unsigned short int);
   /**
    * \param rang Le rang dans le vecteur du client a changé
