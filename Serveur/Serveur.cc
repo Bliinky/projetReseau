@@ -24,11 +24,6 @@ struct DescTableauClient
   in_addr adresse;
 };
 
-struct protocoleEnvoieDonnee
-{
-  int proto;
-  DonneeClient donnee;
-};
 
 
 Serveur::Serveur()
@@ -41,7 +36,11 @@ Serveur::Serveur()
 }
 Serveur::~Serveur()
 {
-  //close(*brPublic);
+  for(int i = 0 ; i < donneeClients.size() ; i++)
+    {
+      close(donneeClients.getDonnee(i)->getDesc());
+    }
+  close(descBrPublic);
   delete brPublic;
 }
 
@@ -146,42 +145,72 @@ void* thread_client(void* par)
   DonneeClient* donnee_client = NULL;
   while((isPresent = read(parametreClient->descClient,&en_tete,4) != 0 && isPresent != -1))
     {
-      cout<<en_tete<<endl;
       switch(en_tete)
 	{
 	case 1:
 	  {
-	    int numero_port;
-	    read(parametreClient->descClient,&numero_port,4);
-	    cout<<"Le numero port du client est: "<<numero_port<<endl;
-	    donnee_client = new DonneeClient(parametreClient->adresse,numero_port);
-	    pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
-	    parametreClient->donneeClients->pushClient(donnee_client);
-	    pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
+	    recuperationPortClient(donnee_client,parametreClient);
+	    break;
 	  }
 	case 2:
 	  {
-	    cout<<"Envoie les informations des autres clients à notre client traitré dans le thread"<<endl;
-	     pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
-	     for(int i = 0 ; i < parametreClient->donneeClients->size() ; i++)
-	       {
-		 if(parametreClient->donneeClients->getDonnee(i) != donnee_client)
-		   {
-		     struct protocoleEnvoieDonnee protocoleDonnee_client;
-		     protocoleDonnee_client.proto = 2;
-		     protocoleDonnee_client.donnee = *(parametreClient->donneeClients->getDonnee(i));
-		     write(parametreClient->descClient,&protocoleDonnee_client,sizeof(protocoleDonnee_client));
-		   }
-	       }
+	    envoieInformationClients(donnee_client,parametreClient);
+	    break;
+	  }
+	case 3:
+	  {
+	    if(pthread_create(
+	    int part = 0;
+	    read(parametreClient->descClient,&part,4);
+	    cout<<part<<endl;
+	    int taille = 0;
+	    read(parametreClient->descClient,&taille,4);
+	    cout<<taille<<endl;
+	    char* nom_fichier = (char*) malloc(sizeof(char) * taille);
+	    read(parametreClient->descClient,nom_fichier,taille);
+	    cout<<nom_fichier<<endl;
 	  }
 	}
     }
+  suppresionClient(donnee_client,parametreClient,isPresent);
+  pthread_exit(par);
+}
 
 
-  //Suppresion client
+
+void envoieInformationClients(DonneeClient* donnee_client,struct DescTableauClient* parametreClient)
+{
+  cout<<"Envoie les informations des autres clients à notre client traitré dans le thread"<<endl;
+  pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
+  for(int i = 0 ; i < parametreClient->donneeClients->size() ; i++)
+     {
+      if(parametreClient->donneeClients->getDonnee(i) != donnee_client)
+	{
+	  struct protocoleEnvoieDonnee protocoleDonnee_client;
+	  protocoleDonnee_client.proto = 2;
+	  protocoleDonnee_client.donnee = *(parametreClient->donneeClients->getDonnee(i));
+	  write(parametreClient->descClient,&protocoleDonnee_client,sizeof(protocoleDonnee_client));
+	}
+    }
+}
+
+void recuperationPortClient(DonneeClient* donnee_client,struct DescTableauClient* parametreClient)
+{
+  cout<<"Récupération du port du client"<<endl;
+  int numero_port;
+  read(parametreClient->descClient,&numero_port,4);
+  cout<<"Le numero port du client est: "<<numero_port<<endl;
+  donnee_client = new DonneeClient(parametreClient->adresse,numero_port,parametreClient->descClient);
+  pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
+  parametreClient->donneeClients->pushClient(donnee_client);
+  pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
+}
+
+void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* parametreClient,int isPresent)
+{
+  cout<<"Suppresion client"<<endl;
   if(isPresent == -1)
     perror("read");
-  cout<<"Client est partie"<<endl;
   close(parametreClient->descClient);
   pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
   int rang = -1;
@@ -189,8 +218,6 @@ void* thread_client(void* par)
     rang =  parametreClient->donneeClients->rangClient(donnee_client); 
   if(rang != -1)
     parametreClient->donneeClients->rmClient(rang);
-  
-  delete parametreClient;
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
-  pthread_exit(par);
+  free(parametreClient);
 }

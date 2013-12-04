@@ -53,5 +53,7 @@ class Serveur
    */
 
 void* thread_client(void*);
-
+void envoieInformationClients(DonneeClient*,struct DescTableauClient*);
+void recuperationPortClient(DonneeClient*, struct DescTableauClient*);
+void suppresionClient(DonneeClient*, struct DescTableauClient*,int);
 #endif

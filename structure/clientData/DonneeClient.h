@@ -1,11 +1,12 @@
 #ifndef DONNEECLIENT_H
-#define DONNECLIENT_H
+#define DONNEECLIENT_H
 
 class DonneeClient
 {
  private:
   in_addr ip;
   int port;
+  int desc;
  public:
   //Constructeur
   /**
@@ -15,7 +16,7 @@ class DonneeClient
   /**
      Création d'un ensemble de donnée d'un client
   */
-  DonneeClient(in_addr,int);
+  DonneeClient(in_addr,int,int);
   /**
      Détruis l'ensemble des informations du client
   */
@@ -28,9 +29,11 @@ class DonneeClient
   //Assceseurs
   in_addr getIp()const;
   int getPort()const;
+  int getDesc()const;
   char* getPortIp();
   void setIp(in_addr);
   void setPort(int);
+  void setDesc(int);
 };
 
 
