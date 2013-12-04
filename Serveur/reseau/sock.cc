@@ -77,7 +77,6 @@ Sock::Sock(int tip, int protocole)
   char port[10];
   file.getline(port,6);
   int nport = atoi(port);
-  cout<<nport<<endl;
   
   if ((sDesc=socket(sProto, tip, protocole))<0) perror("pb socket");
   else bind(sDesc, (short)nport);

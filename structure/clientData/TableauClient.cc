@@ -61,6 +61,14 @@ void TableauClient::rmClient(unsigned short int rang)
   DonneeClient* copie = donnee[rang];
   donnee.erase(donnee.begin() + rang);
 }
+int TableauClient::rangClient(DonneeClient* donnee_client)
+{
+  for(int i = 0 ; i < this->size() ; i ++)
+    {
+      if(donnee_client == donnee[i])
+	return i;
+    }
+}
 
 void TableauClient::verrou_init()
 {

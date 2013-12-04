@@ -61,7 +61,6 @@ void TableauClient::rmClient(unsigned short int rang)
   DonneeClient* copie = donnee[rang];
   donnee.erase(donnee.begin() + rang);
 }
-
 void TableauClient::verrou_init()
 {
   if(pthread_mutex_init(&verrou,NULL) != 0)

@@ -52,6 +52,7 @@ class TableauClient
    * \param rang Place dans le vecteur à rajouter
    */
   void rmClient(unsigned short int);
+  int rangClient(DonneeClient* donnee_client);
   void verrou_init();
 };
 

@@ -6,10 +6,10 @@ using namespace std;
 #include "reseau/sockdist.h"
 #include "threadData/DonneeThread.h"
 #include "threadData/TableauThread.h"
-#include "clientData/DonneeClient.h"
-#include "clientData/TableauClient.h"
+#include "../structure/clientData/DonneeClient.h"
+#include "../structure/clientData/TableauClient.h"
 #include "Serveur.h"
-
+#include "../structure/structure.h"
 int main()
 {
   Serveur* s = new Serveur();

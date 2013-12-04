@@ -8,11 +8,11 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 using namespace std;
-
+#include "../structure/structure.h"
 #include "reseau/sock.h"
 #include "reseau/sockdist.h"
-#include "clientData/DonneeClient.h"
-#include "clientData/TableauClient.h"
+#include "../structure/clientData/DonneeClient.h"
+#include "../structure/clientData/TableauClient.h"
 #include "threadData/DonneeThread.h"
 #include "threadData/TableauThread.h"
 #include "Serveur.h"
@@ -24,6 +24,13 @@ struct DescTableauClient
   in_addr adresse;
 };
 
+struct protocoleEnvoieDonnee
+{
+  int proto;
+  DonneeClient donnee;
+};
+
+
 Serveur::Serveur()
 {
   brPublic = new Sock(SOCK_STREAM, 0);
@@ -31,7 +38,6 @@ Serveur::Serveur()
   else{cout<<"Probleme initialisation de la socket"<<endl; 
     exit(-1);}
   listen(descBrPublic,100);
-  donneeClients.verrou_init();
 }
 Serveur::~Serveur()
 {
@@ -137,25 +143,54 @@ void* thread_client(void* par)
   cout<<parametreClient->descClient<<endl;
   int en_tete = -1;
   int isPresent;
+  DonneeClient* donnee_client = NULL;
   while((isPresent = read(parametreClient->descClient,&en_tete,4) != 0 && isPresent != -1))
     {
       cout<<en_tete<<endl;
       switch(en_tete)
 	{
 	case 1:
-	    {
-	      int numero_port;
-	      read(parametreClient->descClient,&numero_port,4);
-	      DonneeClient* donnee_client= new DonneeClient(parametreClient->adresse,numero_port);
-	      pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
-	      
-	    }
+	  {
+	    int numero_port;
+	    read(parametreClient->descClient,&numero_port,4);
+	    cout<<"Le numero port du client est: "<<numero_port<<endl;
+	    donnee_client = new DonneeClient(parametreClient->adresse,numero_port);
+	    pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
+	    parametreClient->donneeClients->pushClient(donnee_client);
+	    pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
+	  }
+	case 2:
+	  {
+	    cout<<"Envoie les informations des autres clients à notre client traitré dans le thread"<<endl;
+	     pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
+	     for(int i = 0 ; i < parametreClient->donneeClients->size() ; i++)
+	       {
+		 if(parametreClient->donneeClients->getDonnee(i) != donnee_client)
+		   {
+		     struct protocoleEnvoieDonnee protocoleDonnee_client;
+		     protocoleDonnee_client.proto = 2;
+		     protocoleDonnee_client.donnee = *(parametreClient->donneeClients->getDonnee(i));
+		     write(parametreClient->descClient,&protocoleDonnee_client,sizeof(protocoleDonnee_client));
+		   }
+	       }
+	  }
 	}
     }
-    if(isPresent == -1)
-      perror("read");
-    cout<<"Client est partie"<<endl;
-    close(parametreClient->descClient);
-    delete parametreClient;
-    pthread_exit(par);
+
+
+  //Suppresion client
+  if(isPresent == -1)
+    perror("read");
+  cout<<"Client est partie"<<endl;
+  close(parametreClient->descClient);
+  pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
+  int rang = -1;
+  if(donnee_client != NULL)
+    rang =  parametreClient->donneeClients->rangClient(donnee_client); 
+  if(rang != -1)
+    parametreClient->donneeClients->rmClient(rang);
+  
+  delete parametreClient;
+  pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
+  pthread_exit(par);
 }

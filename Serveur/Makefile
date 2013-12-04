@@ -12,11 +12,11 @@ DonneeThread.o: threadData/DonneeThread.cc
 TableauThread.o: threadData/TableauThread.cc
 	$(CC) $(CFLAGS) -c threadData/TableauThread.cc
 
-DonneeClient.o: clientData/DonneeClient.cc
-	$(CC) $(CFLAGS) -c clientData/DonneeClient.cc
+DonneeClient.o: ../structure/clientData/DonneeClient.cc
+	$(CC) $(CFLAGS) -c ../structure/clientData/DonneeClient.cc
 
-TableauClient.o: clientData/TableauClient.cc 
-	$(CC) $(CFLAGS) -c clientData/TableauClient.cc 
+TableauClient.o: ../structure/clientData/TableauClient.cc 
+	$(CC) $(CFLAGS) -c ../structure/clientData/TableauClient.cc 
 
 principal.o: principal.cc
 	$(CC) $(CFLAGS) -c principal.cc
