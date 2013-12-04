@@ -159,7 +159,7 @@ void* thread_client(void* par)
 	  }
 	case 3:
 	  {
-	    if(pthread_create(
+	    if(pthread_create(&id,NULL,thread_recupere_fichier,(void*)
 	    int part = 0;
 	    read(parametreClient->descClient,&part,4);
 	    cout<<part<<endl;
