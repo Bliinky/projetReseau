@@ -1,16 +1,13 @@
 #include <iostream>
 #include "unistd.h"
-#include "client.h"
+#include "interface/interface.h"
 
 using namespace std;
 
 int main(int argc, char** argv)
 {
-  Client *c = new Client();
-  c->lancerPortEcoute();
-  c->connexionServeur();
-  sleep(5);
-  c->fermeturePortEcoute();
-  delete c;
+  Interface *i = new Interface();
+  i->run();
+  delete i;
   return 0;
 }

@@ -5,15 +5,10 @@
 #include "sockdist.h"
 #include "pthread.h"
 #include "sys/types.h"
+#include "../structure/structure.h"
 #include <vector>
 
 using namespace std;
-
-struct protocolePort
-{
-  int proto;
-  int port;
-};
 
 class Client
 {
@@ -38,12 +33,16 @@ class Client
   void lancerPortEcoute();
   void fermeturePortEcoute();
   void connexionServeur();
+  void deconnexionServeur();
+
+  void envoyerFichier();
+  void recupererFichier(char*);
 
   int getDescSockServeur();
   void setDescSockServeur(int);
   int getDescSockPub();
   void setDescSockPub(int);
-  void setPort(int port);
+  void setPort(int);
   int getPort();
   
 };
