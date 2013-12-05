@@ -2,6 +2,7 @@
 #include "sockdist.h"
 #include <fstream>
 #include <stdlib.h>
+#include "string.h"
 #include "unistd.h"
 #include "pthread.h"
 #include "sys/types.h"
@@ -47,6 +48,7 @@ void Client::lancerPortEcoute()
 
 void Client::fermeturePortEcoute()
 {
+  pthread_cancel(idThServ);
   if(pthread_join(idThServ, NULL) != 0)
     {
       cout << "Warning: Erreur lors du pthread_join() du port d'écoute" << endl;
@@ -89,11 +91,35 @@ void Client::connexionServeur()
   
   cout << "Connexion établie avec le serveur" << endl;  
   
-  struct protocolePort monPort;
+  struct protocoleEnvoiePort monPort;
   monPort.proto = 1;
   monPort.port = numeroPort;
   
-  write(descSockServeur,&monPort,sizeof(struct protocolePort));
+  write(descSockServeur,&monPort,sizeof(struct protocoleEnvoiePort));
+
+  //créer un thread qui se met a l'écoute du serveur
+}
+
+void Client::deconnexionServeur()
+{
+  close(descSockServeur);
+  cout << "Deconnexion du serveur" << endl;
+}
+
+void Client::envoyerFichier()
+{
+
+}
+
+void Client::recupererFichier(char* nomFichier)
+{
+  struct protocoleRecupereFichier req;
+  req.proto = 3;
+  req.part = 69;
+  strcpy(req.nom,nomFichier);
+  req.taille = strlen(req.nom);
+
+  write(descSockServeur,&req,sizeof(int)*3+req.taille);
 }
 
 void Client::setDescSockServeur(int desc)
