@@ -153,7 +153,7 @@ void* thread_client(void* par)
 	{
 	case 1:
 	  {
-	    recuperationPortClient(donnee_client,parametreClient);
+	    donnee_client = recuperationPortClient(parametreClient);
 	    break;
 	  }
 	case 2:
@@ -191,18 +191,20 @@ void envoieInformationClients(DonneeClient* donnee_client,struct DescTableauClie
 	  cout<<"Le client envoyé a l'ip "<<protocoleDonnee_client.ip<< " et le port "<<protocoleDonnee_client.port<<endl;
 	}
     }
+    pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
 }
 
-void recuperationPortClient(DonneeClient* donnee_client,struct DescTableauClient* parametreClient)
+DonneeClient* recuperationPortClient(struct DescTableauClient* parametreClient)
 {
   cout<<"Récupération du port du client"<<endl;
   int numero_port;
   read(parametreClient->descClient,&numero_port,4);
   cout<<"Le numero port du client est: "<<numero_port<<endl;
-  donnee_client = new DonneeClient(parametreClient->adresse,numero_port,parametreClient->descClient);
+  DonneeClient* donnee_client = new DonneeClient(parametreClient->adresse,numero_port,parametreClient->descClient);
   pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
   parametreClient->donneeClients->pushClient(donnee_client);
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
+  return donnee_client;
 }
 
 void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* parametreClient,int isPresent)
@@ -215,6 +217,7 @@ void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* para
   int rang = -1;
   if(donnee_client != NULL)
     rang =  parametreClient->donneeClients->rangClient(donnee_client); 
+  cout<<"rang : "<<rang<<endl;
   if(rang != -1)
     parametreClient->donneeClients->rmClient(rang);
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
