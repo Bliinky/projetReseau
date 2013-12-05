@@ -97,7 +97,11 @@ void Client::connexionServeur()
   
   write(descSockServeur,&monPort,sizeof(struct protocoleEnvoiePort));
 
-  //créer un thread qui se met a l'écoute du serveur
+  if(pthread_create(&idThServPrin,NULL,threadReceptionServeurPrin, &descSockServeur) != 0)
+    {
+      cout << "Erreur création thread reception serveur principal" << endl;
+      exit(1);
+    }
 }
 
 void Client::deconnexionServeur()
@@ -108,7 +112,7 @@ void Client::deconnexionServeur()
 
 void Client::envoyerFichier()
 {
-
+  
 }
 
 void Client::recupererFichier(char* nomFichier)
@@ -120,6 +124,14 @@ void Client::recupererFichier(char* nomFichier)
   req.taille = strlen(req.nom);
 
   write(descSockServeur,&req,sizeof(int)*3+req.taille);
+}
+
+void rafraichierClient()
+{
+  struct protocoleRecupereClient prot;
+  prot.proto = 2;
+
+  write(descSockServeur,&prot,sizeof(prot));
 }
 
 void Client::setDescSockServeur(int desc)
@@ -172,6 +184,7 @@ void *threadPortEcoute(void *par)
 
   while(true)
     {
+      pthread_t *idThClient;
       if((descSockCV = accept(*descSockPub, (struct sockaddr *)&sockCV, &lgSockCV)) < 0)
 	{
 	  cout << "Problème accept() du port d'écoute" << endl;
@@ -179,6 +192,7 @@ void *threadPortEcoute(void *par)
 	}
       cout << "Nouvelle connection" << endl;
       clients.push_back(descSockCV);
+      
     }
   
   pthread_exit(NULL);
@@ -187,4 +201,33 @@ void *threadPortEcoute(void *par)
 void *threadClient(void *par)
 {
   
+}
+
+void *threadReceptionServeurPrin(void *par)
+{
+  int *descSockServeur = (int *)par;
+  int proto;
+  int fermeture;
+  while((fermeture = read(*descSockServ,&proto,4)) > 0)
+    {
+      switch(proto)
+	{
+	case 2:
+	  int ip;
+	  int port;
+	  read(*descSockServ,&ip,4);
+	  read(*descSockServ,&port,4);
+	  
+	  cout << ip << " " << port << endl;
+	  break;
+	}
+    }
+  if(fermeture == 0)
+    {
+      cout << "La connexion avec le serveur à été perdu" << endl;
+    }
+  if(fermeture == -1)
+    {
+      cout << "Une erreur lors de la comunication avec le serveur est survenue" << endl;
+    }
 }

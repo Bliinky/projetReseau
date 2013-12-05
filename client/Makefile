@@ -20,6 +20,6 @@ sockdist.o: sockdist.cc
 	$(CC) $(CFLAGS) -c sockdist.cc
 
 clean:
-	rm -rf *.o *~
+	rm -rf *.o *~ client
 
 

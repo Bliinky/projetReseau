@@ -13,9 +13,9 @@ Interface::~Interface()
 
 void Interface::run()
 {
-  cout << "~~~~~~~~ FreeShare ~~~~~~~~" << endl;
-  cout << "by Roknus & Bliinky" << endl;
-  cout << "Version 1.0" << endl;
+  cout << "\t~~~~~~~~~ FreeShare ~~~~~~~~~" << endl;
+  cout << "\t    by Roknus & Bliinky" << endl;
+  cout << "\t         Version 1.0" << endl;
 
   int selectionMenu = 0;
 
@@ -28,9 +28,12 @@ void Interface::run()
       cout << "\t 4 - Fermer le port d'écoute" << endl;
       cout << "\t 5 - Envoyer un fichier" << endl;
       cout << "\t 6 - Recuperer un fichier" << endl;
+      cout << "\t 7 - Rafraichier liste des clients" << endl;
       cout << "\t 99 - Quitter" << endl;
 
       cin >> selectionMenu;
+
+      system("clear");
       
       switch(selectionMenu)
 	{
@@ -54,6 +57,9 @@ void Interface::run()
 	  char nomFichier[255];
 	  cin >> nomFichier;
 	  recupererFichier(nomFichier);
+	  break;
+	case 7:
+	  rafraichierClient();
 	  break;
 	case 99 :
 	  cout << "A bientot :)" << endl;
@@ -83,6 +89,11 @@ void Interface::connexionServeur()
 void Interface::deconnexionServeur()
 {
   client->deconnexionServeur();
+}
+
+void rafraichierClient()
+{
+  client->rafraichirClient();
 }
 
 void Interface::envoyerFichier()

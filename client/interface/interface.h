@@ -22,6 +22,8 @@ class Interface
   void connexionServeur();
   void deconnexionServeur();
 
+  void rafraichirClient();
+
   void envoyerFichier();
   void recupererFichier(char[]);
 
