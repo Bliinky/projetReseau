@@ -56,4 +56,7 @@ void* thread_client(void*);
 void envoieInformationClients(DonneeClient*,struct DescTableauClient*);
 void recuperationPortClient(DonneeClient*, struct DescTableauClient*);
 void suppresionClient(DonneeClient*, struct DescTableauClient*,int);
+
+void* thread_partition(void*);
+void creationThreadPartition(struct DescTableauClient* parametreClient);
 #endif

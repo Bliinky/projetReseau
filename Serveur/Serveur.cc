@@ -22,9 +22,14 @@ struct DescTableauClient
   TableauClient* donneeClients;
   int descClient;
   in_addr adresse;
+  
 };
 
-
+struct ParametreFichier
+{
+  struct DescTableauClient* parametreClient;
+  struct protocoleRecupereFichier fichier;
+};
 
 Serveur::Serveur()
 {
@@ -139,7 +144,6 @@ pthread_t Serveur::creationThreadClient(int descBrCircuitVirtuel,struct sockaddr
 void* thread_client(void* par)
 {
   struct DescTableauClient* parametreClient = (struct DescTableauClient*)par;
-  cout<<parametreClient->descClient<<endl;
   int en_tete = -1;
   int isPresent;
   DonneeClient* donnee_client = NULL;
@@ -159,16 +163,9 @@ void* thread_client(void* par)
 	  }
 	case 3:
 	  {
-	    if(pthread_create(&id,NULL,thread_recupere_fichier,(void*)
-	    int part = 0;
-	    read(parametreClient->descClient,&part,4);
-	    cout<<part<<endl;
-	    int taille = 0;
-	    read(parametreClient->descClient,&taille,4);
-	    cout<<taille<<endl;
-	    char* nom_fichier = (char*) malloc(sizeof(char) * taille);
-	    read(parametreClient->descClient,nom_fichier,taille);
-	    cout<<nom_fichier<<endl;
+	    creationThreadPartition(parametreClient);
+	    break;
+	   
 	  }
 	}
     }
@@ -188,8 +185,10 @@ void envoieInformationClients(DonneeClient* donnee_client,struct DescTableauClie
 	{
 	  struct protocoleEnvoieDonnee protocoleDonnee_client;
 	  protocoleDonnee_client.proto = 2;
-	  protocoleDonnee_client.donnee = *(parametreClient->donneeClients->getDonnee(i));
+	  protocoleDonnee_client.ip = inet_addr(inet_ntoa(parametreClient->donneeClients->getDonnee(i)->getIp()));
+	  protocoleDonnee_client.port = parametreClient->donneeClients->getDonnee(i)->getPort();
 	  write(parametreClient->descClient,&protocoleDonnee_client,sizeof(protocoleDonnee_client));
+	  cout<<"Le client envoyé a l'ip "<<protocoleDonnee_client.ip<< " et le port "<<protocoleDonnee_client.port<<endl;
 	}
     }
 }
@@ -220,4 +219,41 @@ void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* para
     parametreClient->donneeClients->rmClient(rang);
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
   free(parametreClient);
+}
+
+
+ 
+
+
+
+
+void creationThreadPartition(struct DescTableauClient* parametreClient)
+{
+  cout<<"Création thread_partition"<<endl;
+  struct ParametreFichier parametre_fichier;
+  pthread_t id;
+  parametre_fichier.parametreClient = parametreClient;
+  parametre_fichier.fichier.proto = 3;
+  read(parametreClient->descClient,&parametre_fichier.fichier.part,4);
+  read(parametreClient->descClient,&parametre_fichier.fichier.taille,4);
+  read(parametreClient->descClient,&parametre_fichier.fichier.nom ,parametre_fichier.fichier.taille);
+  
+  if(pthread_create(&id,NULL,thread_partition,(void*)&parametre_fichier))
+    {
+      cout<<"Erreur thread_partition creation "<<endl;
+    }
+}
+	
+void* thread_partition(void* par)
+{
+  struct ParametreFichier* parametre_fichier = (struct ParametreFichier*)par;
+  pthread_mutex_lock(&(parametre_fichier->parametreClient->donneeClients->getVerrou()));
+  for(int i = 0 ; i < parametre_fichier->parametreClient->donneeClients->size() ; i++)
+    {
+      int desc = parametre_fichier->parametreClient->donneeClients->getDonnee(i)->getDesc();
+      if(desc != parametre_fichier->parametreClient->descClient)
+	if(-1 == write(desc,&(parametre_fichier->fichier),sizeof(int) * 3 + parametre_fichier->fichier.taille))
+	  cout<<"Erreur write"<<endl;
+    }
+  pthread_mutex_unlock(&(parametre_fichier->parametreClient->donneeClients->getVerrou()));
 }
