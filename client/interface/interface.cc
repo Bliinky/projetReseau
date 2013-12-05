@@ -59,7 +59,7 @@ void Interface::run()
 	  recupererFichier(nomFichier);
 	  break;
 	case 7:
-	  rafraichierClient();
+	  rafraichirClient();
 	  break;
 	case 99 :
 	  cout << "A bientot :)" << endl;
@@ -91,7 +91,7 @@ void Interface::deconnexionServeur()
   client->deconnexionServeur();
 }
 
-void rafraichierClient()
+void Interface::rafraichirClient()
 {
   client->rafraichirClient();
 }

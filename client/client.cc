@@ -21,7 +21,7 @@ Client::Client()
   if(sockPub->good()) setDescSockPub(sockPub->getsDesc());
   else
     {
-      cout << "Problème initialisation de la socket publique" << endl;
+      perror("ConstructeurClient");
       exit(1);
     }
   cout << "Création de la socket publique réussi" << endl;
@@ -41,7 +41,7 @@ void Client::lancerPortEcoute()
 {
   if(pthread_create(&idThServ, NULL, threadPortEcoute, &descSockPub) != 0)
     {
-      cout << "Erreur lors du lancement du port d'écoute" << endl;
+      perror("LancerPortEcoute");
       exit(1);
     }
 }
@@ -51,7 +51,7 @@ void Client::fermeturePortEcoute()
   pthread_cancel(idThServ);
   if(pthread_join(idThServ, NULL) != 0)
     {
-      cout << "Warning: Erreur lors du pthread_join() du port d'écoute" << endl;
+      perror("FermeturePortEcoute");
     }
   cout << "Fin d'execution du port d'écoute" << endl;
 }
@@ -63,7 +63,7 @@ void Client::connexionServeur()
   if(sockServeur->good()) setDescSockServeur(sockServeur->getsDesc());
   else
     {
-      cout << "Probleme initialisation de la socket serveur" << endl;
+      perror("ConnexionServeur");
       exit(1);
     }
   cout << "Création de la socket serveur réussi" << endl;
@@ -99,7 +99,7 @@ void Client::connexionServeur()
 
   if(pthread_create(&idThServPrin,NULL,threadReceptionServeurPrin, &descSockServeur) != 0)
     {
-      cout << "Erreur création thread reception serveur principal" << endl;
+      perror("ConnexionServeur");
       exit(1);
     }
 }
@@ -107,6 +107,10 @@ void Client::connexionServeur()
 void Client::deconnexionServeur()
 {
   close(descSockServeur);
+  /*if(pthread_join(idThServPrin, NULL) != 0)
+    {
+      perror("Deconnexion du serveur");
+      }*/
   cout << "Deconnexion du serveur" << endl;
 }
 
@@ -126,7 +130,7 @@ void Client::recupererFichier(char* nomFichier)
   write(descSockServeur,&req,sizeof(int)*3+req.taille);
 }
 
-void rafraichierClient()
+void Client::rafraichirClient()
 {
   struct protocoleRecupereClient prot;
   prot.proto = 2;
@@ -208,15 +212,15 @@ void *threadReceptionServeurPrin(void *par)
   int *descSockServeur = (int *)par;
   int proto;
   int fermeture;
-  while((fermeture = read(*descSockServ,&proto,4)) > 0)
+  while((fermeture = read(*descSockServeur,&proto,4)) > 0)
     {
       switch(proto)
 	{
 	case 2:
 	  int ip;
 	  int port;
-	  read(*descSockServ,&ip,4);
-	  read(*descSockServ,&port,4);
+	  read(*descSockServeur,&ip,4);
+	  read(*descSockServeur,&port,4);
 	  
 	  cout << ip << " " << port << endl;
 	  break;
@@ -224,10 +228,10 @@ void *threadReceptionServeurPrin(void *par)
     }
   if(fermeture == 0)
     {
-      cout << "La connexion avec le serveur à été perdu" << endl;
+      perror("ThreadReceptionServeurPrin");
     }
   if(fermeture == -1)
     {
-      cout << "Une erreur lors de la comunication avec le serveur est survenue" << endl;
+      perror("ThreadReceptionServeurPrin");
     }
 }

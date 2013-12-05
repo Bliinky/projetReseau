@@ -18,7 +18,7 @@ class Client
   int descSockPub;
   int numeroPort;
 
-  pthread idThServPrin;
+  pthread_t idThServPrin;
   Sock *sockServeur;
   int descSockServeur;
   char adresse[255];
@@ -51,5 +51,5 @@ class Client
 
 void *threadPortEcoute(void *);
 void *threadClient(void *);
-void *threadReceptionServeur(void *par)
+void *threadReceptionServeurPrin(void *par);
 #endif
