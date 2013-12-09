@@ -48,7 +48,10 @@ void Interface::run()
 	  fermeturePortEcoute();
 	  break;
 	case 5 :
-	  envoyerFichier();
+	  cout << "Chemin du fichier ?" << endl;
+	  char nomFichier[255];
+	  cin >> nomFichier;
+	  envoyerFichier(nomFichier);
 	  break;
 	case 6:
 	  cout << "Nom du fichier ?" << endl;
@@ -94,9 +97,9 @@ void Interface::rafraichirClient()
   client->rafraichirClient();
 }
 
-void Interface::envoyerFichier()
+void Interface::envoyerFichier(char* nomFichier)
 {
-  client->envoyerFichier();
+  client->envoyerFichier(nomFichier);
 }
 
 void Interface::recupererFichier(char* nomFichier)

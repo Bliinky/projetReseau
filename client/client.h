@@ -36,7 +36,7 @@ class Client
   void connexionServeur();
   void deconnexionServeur();
 
-  void envoyerFichier();
+  void envoyerFichier(char*);
   void recupererFichier(char*);
   void rafraichirClient();
 

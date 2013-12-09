@@ -131,6 +131,7 @@ void Client::envoyerFichier(char* nomFichier)
       infoClientFile.getLine(fileName,255);
       char * tok;
       tok = strtok(fileName,";");
+      
     }
   
 }
