@@ -189,7 +189,7 @@ int Client::getPort()
 void *threadPortEcoute(void *par)
 {
   int *descSockPub = (int *)par;
-  vector<int> clients;
+  TableauClient clients;
   
   if(listen(*descSockPub,10) != 0)
     {
@@ -208,10 +208,18 @@ void *threadPortEcoute(void *par)
       if((descSockCV = accept(*descSockPub, (struct sockaddr *)&sockCV, &lgSockCV)) < 0)
 	{
 	  cout << "Problème accept() du port d'écoute" << endl;
-	  exit(1);
+	  perror("accept");
 	}
-      cout << "Nouvelle connection" << endl;
-      clients.push_back(descSockCV);
+      else
+	{
+	  cout << "Nouvelle connection" << endl;
+	  (*idThClient) = creationThreadClient(descSockCv, sockCV);
+	  if((*idThClient) == -1)
+	    {
+	      close(descSockCV);
+	    }
+	}
+      
       
     }
   
@@ -220,8 +228,34 @@ void *threadPortEcoute(void *par)
 
 void *threadClient(void *par)
 {
-  
+  struct DescTableauClient* parametreClient = (struct DescTableauCLient*)par;
+  int en_tete = -1;
+  int isPresent;
+  DonneeClient* donnee_client = new DonneeClient(parametreClient->adresse,numero_port,parametreClient->descClient);
+  pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
+  parametreClient->donneeClient->pushClient(donnee_client);
+  pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
+  while((isPresent = read(parametreClient->descClient, &en_tete,4) != 0 && isPresent != -1))
+    {
+      switch(en_tete)
+	{
+	case 1: 
+	  {
+	    int idFichier;
+	    read(parametreClient->descClient,&idFichier,4);
+	    int taille;
+	    read(parametreClient->descClient,&taille,4);
+	    char nom = (char*)malloc(sizeof(char) * taille);
+	    
+	    break;
+	  }
+	}
+    }
+  suppresionClient(donnee_client,parametreClient,isPresent);
+  pthread_exit(par);
 }
+
+void creationThreadPartition(
 
 void *threadReceptionServeurPrin(void *par)
 {
@@ -250,4 +284,39 @@ void *threadReceptionServeurPrin(void *par)
     {
       perror("ThreadReceptionServeurPrin");
     }
+}
+
+pthread_t Client::creationThreadClient(int descBrCircuitVirtuel,struct sockaddr_in& adresse)
+{
+  pthread_t id;
+  struct DescTableauClient* parametreThread = (struct DescTableauClient*)malloc(sizeof(struct DescTableauClient));
+  parametreThread->donneeClients = &donneeClients;
+  parametreThread->descClient = descBrCircuitVirtuel;
+  parametreThread->adresse = adresse.sin_addr;
+  if(pthread_create(&id,NULL,thread_client,(void*)parametreThread) != 0)
+    {
+      cout<<"Erreut thread creation"<<endl;
+      return -1;
+    }
+  else
+    {
+      return id;
+    }
+}
+
+void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* parametreClient,int isPresent)
+{
+  cout<<"Suppresion client"<<endl;
+  if(isPresent == -1)
+    perror("read");
+  close(parametreClient->descClient);
+  pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
+  int rang = -1;
+  if(donnee_client != NULL)
+    rang =  parametreClient->donneeClients->rangClient(donnee_client); 
+  cout<<"rang : "<<rang<<endl;
+  if(rang != -1)
+    parametreClient->donneeClients->rmClient(rang);
+  pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
+  free(parametreClient);
 }
