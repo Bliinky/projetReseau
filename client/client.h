@@ -52,4 +52,6 @@ class Client
 void *threadPortEcoute(void *);
 void *threadClient(void *);
 void *threadReceptionServeurPrin(void *par);
+pthread_t creationThreadClient(int, struct sockaddr_in&);
+
 #endif
