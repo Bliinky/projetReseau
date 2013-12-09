@@ -32,8 +32,6 @@ void Interface::run()
       cout << "\t 99 - Quitter" << endl;
 
       cin >> selectionMenu;
-
-      system("clear");
       
       switch(selectionMenu)
 	{

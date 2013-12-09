@@ -59,6 +59,10 @@ void Client::fermeturePortEcoute()
 
 void Client::connexionServeur()
 {
+  if(descSockServeur != NULL)
+    {
+      deconnexionServeur();
+    }
   sockServeur = new Sock(SOCK_STREAM, 0);
   if(sockServeur->good()) setDescSockServeur(sockServeur->getsDesc());
   else
@@ -107,10 +111,14 @@ void Client::connexionServeur()
 void Client::deconnexionServeur()
 {
   close(descSockServeur);
-  /*if(pthread_join(idThServPrin, NULL) != 0)
+  descSockServeur = 0;
+
+  
+  pthread_cancel(idThServPrin);
+  if(pthread_join(idThServPrin, NULL) != 0)
     {
       perror("Deconnexion du serveur");
-      }*/
+    }
   cout << "Deconnexion du serveur" << endl;
 }
 
