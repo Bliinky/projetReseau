@@ -1,13 +1,21 @@
 #ifndef STRUCTURE_H
 #define STRUCTURE_H
 #include "clientData/DonneeClient.h"
+#include "clientData/TableauClient.h"
 //1
 struct protocoleEnvoiePort
 {
   int proto;
   int port;
 };
-
+struct protocoleEnvoieFichier
+{
+  int proto;
+  int part;
+  int taille_nom;
+  int taille_fichier;
+  char nom_et_fichier[60000];
+};
 //2
 
 struct protocoleRecupereClient
@@ -28,6 +36,21 @@ struct protocoleRecupereFichier
   int part;
   int taille;
   char nom[255];
+};
+
+
+struct DescTableauClient
+{
+  TableauClient* donneeClients;
+  int descClient;
+  in_addr adresse;
+  
+};
+
+struct ParametreFichier
+{
+  struct DescTableauClient* parametreClient;
+  struct protocoleRecupereFichier fichier;
 };
 
 #endif

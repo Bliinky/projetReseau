@@ -17,6 +17,11 @@ class DonneeClient
      Création d'un ensemble de donnée d'un client
   */
   DonneeClient(in_addr,int,int);
+    /**
+     Création d'un ensemble de donnée d'un client sans le port
+  */
+  DonneeClient(in_addr,int);
+  
   /**
      Détruis l'ensemble des informations du client
   */

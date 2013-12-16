@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 using namespace std;
-
+#include "../structure.h"
 #include "DonneeClient.h"
 #include "TableauClient.h"
 
@@ -60,9 +60,11 @@ void TableauClient::rmClient(unsigned short int rang)
 {
   DonneeClient* copie = donnee[rang];
   donnee.erase(donnee.begin() + rang);
+  delete copie;
 }
 int TableauClient::rangClient(DonneeClient* donnee_client)
 {
+  cout<<"nombre client(TableauClient) "<<this->size()<<endl;
   for(int i = 0 ; i < this->size() ; i ++)
     {
       if(donnee_client == donnee[i])
