@@ -25,7 +25,7 @@ struct protocoleRecupereClient
 struct protocoleEnvoieDonnee
 {
   int proto;
-  int ip;
+  in_addr ip;
   int port;
 };
 
@@ -38,6 +38,11 @@ struct protocoleRecupereFichier
   char nom[255];
 };
 
+struct tableauDescServeur
+{
+  TableauClient* donneeClients;
+  int descServeur;
+};
 
 struct DescTableauClient
 {

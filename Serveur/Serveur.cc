@@ -173,10 +173,10 @@ void envoieInformationClients(DonneeClient* donnee_client,struct DescTableauClie
        {
 	  struct protocoleEnvoieDonnee protocoleDonnee_client;
 	  protocoleDonnee_client.proto = 2;
-	  protocoleDonnee_client.ip = inet_addr(inet_ntoa(parametreClient->donneeClients->getDonnee(i)->getIp()));
+	  protocoleDonnee_client.ip = parametreClient->donneeClients->getDonnee(i)->getIp();
 	  protocoleDonnee_client.port = parametreClient->donneeClients->getDonnee(i)->getPort();
 	  write(parametreClient->descClient,&protocoleDonnee_client,sizeof(protocoleDonnee_client));
-	  cout<<"Le client envoyé a l'ip "<<protocoleDonnee_client.ip<< " et le port "<<protocoleDonnee_client.port<<endl;
+	  //cout<<"Le client envoyé a l'ip "<<protocoleDonnee_client.ip<< " et le port "<<protocoleDonnee_client.port<<endl;
 	}
     }
     pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
