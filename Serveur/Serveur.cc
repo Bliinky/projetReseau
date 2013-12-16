@@ -17,19 +17,7 @@ using namespace std;
 #include "threadData/TableauThread.h"
 #include "Serveur.h"
 
-struct DescTableauClient
-{
-  TableauClient* donneeClients;
-  int descClient;
-  in_addr adresse;
-  
-};
 
-struct ParametreFichier
-{
-  struct DescTableauClient* parametreClient;
-  struct protocoleRecupereFichier fichier;
-};
 
 Serveur::Serveur()
 {
@@ -181,8 +169,8 @@ void envoieInformationClients(DonneeClient* donnee_client,struct DescTableauClie
   pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
   for(int i = 0 ; i < parametreClient->donneeClients->size() ; i++)
      {
-      if(parametreClient->donneeClients->getDonnee(i) != donnee_client)
-	{
+       if(parametreClient->donneeClients->getDonnee(i) != donnee_client)
+       {
 	  struct protocoleEnvoieDonnee protocoleDonnee_client;
 	  protocoleDonnee_client.proto = 2;
 	  protocoleDonnee_client.ip = inet_addr(inet_ntoa(parametreClient->donneeClients->getDonnee(i)->getIp()));
@@ -227,7 +215,7 @@ void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* para
 
  
 
-
+//Protocole numero 3: Demande d'une partition
 
 
 void creationThreadPartition(struct DescTableauClient* parametreClient)
@@ -240,7 +228,7 @@ void creationThreadPartition(struct DescTableauClient* parametreClient)
   read(parametreClient->descClient,&parametre_fichier.fichier.part,4);
   read(parametreClient->descClient,&parametre_fichier.fichier.taille,4);
   read(parametreClient->descClient,&parametre_fichier.fichier.nom ,parametre_fichier.fichier.taille);
-  
+  cout<<parametre_fichier.fichier.nom<<endl;
   if(pthread_create(&id,NULL,thread_partition,(void*)&parametre_fichier))
     {
       cout<<"Erreur thread_partition creation "<<endl;

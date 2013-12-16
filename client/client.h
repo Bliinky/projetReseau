@@ -5,8 +5,6 @@
 #include "sockdist.h"
 #include "pthread.h"
 #include "sys/types.h"
-#include "../structure/structure.h"
-#include <vector>
 
 using namespace std;
 
@@ -52,6 +50,8 @@ class Client
 void *threadPortEcoute(void *);
 void *threadClient(void *);
 void *threadReceptionServeurPrin(void *par);
-pthread_t creationThreadClient(int, struct sockaddr_in&);
-
+pthread_t creationThreadClient(TableauClient*, int, struct sockaddr_in&);
+void suppresionClient(DonneeClient*, struct DescTableauClient*, int);
+void recuperationPartition(int);
+void ecriturePartition(int,char*,char*);
 #endif

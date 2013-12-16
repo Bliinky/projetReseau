@@ -1,3 +1,4 @@
+#include <vector>
 #include "sock.h"
 #include "sockdist.h"
 #include <fstream>
@@ -6,6 +7,9 @@
 #include "unistd.h"
 #include "pthread.h"
 #include "sys/types.h"
+#include "../structure/structure.h"
+#include "../structure/clientData/DonneeClient.h"
+#include "../structure/clientData/TableauClient.h"
 #include "client.h"
 
 Client::Client()
@@ -192,7 +196,7 @@ int Client::getPort()
 void *threadPortEcoute(void *par)
 {
   int *descSockPub = (int *)par;
-  //TableauClient clients;
+  TableauClient donneeClients;
   
   if(listen(*descSockPub,10) != 0)
     {
@@ -216,12 +220,12 @@ void *threadPortEcoute(void *par)
       else
 	{
 	  cout << "Nouvelle connection" << endl;
-	  /* (*idThClient) = creationThreadClient(descSockCv, sockCV);
+	  (*idThClient) = creationThreadClient(&donneeClients,descSockCV,sockCV);
 	  if((*idThClient) == -1)
 	    {
 	      close(descSockCV);
 	    }
-	  */
+	  
 	}
       
       
@@ -229,15 +233,15 @@ void *threadPortEcoute(void *par)
   
   pthread_exit(NULL);
 }
-/*
+
 void *threadClient(void *par)
 {
-  struct DescTableauClient* parametreClient = (struct DescTableauCLient*)par;
+  struct DescTableauClient* parametreClient = (struct DescTableauClient*)par;
   int en_tete = -1;
   int isPresent;
-  DonneeClient* donnee_client = new DonneeClient(parametreClient->adresse,numero_port,parametreClient->descClient);
+  DonneeClient* donnee_client = new DonneeClient(parametreClient->adresse,parametreClient->descClient);
   pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
-  parametreClient->donneeClient->pushClient(donnee_client);
+  parametreClient->donneeClients->pushClient(donnee_client);
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
   while((isPresent = read(parametreClient->descClient, &en_tete,4) != 0 && isPresent != -1))
     {
@@ -245,12 +249,7 @@ void *threadClient(void *par)
 	{
 	case 1: 
 	  {
-	    int idFichier;
-	    read(parametreClient->descClient,&idFichier,4);
-	    int taille;
-	    read(parametreClient->descClient,&taille,4);
-	    char nom = (char*)malloc(sizeof(char) * taille);
-	    
+	    recuperationPartition(parametreClient->descClient);
 	    break;
 	  }
 	}
@@ -259,7 +258,35 @@ void *threadClient(void *par)
   pthread_exit(par);
 }
 
-*/
+ void recuperationPartition(int desc)
+ {
+   int part;
+   read(desc,&part,4);
+   int taille_nom;
+   read(desc,&taille_nom,4);
+   int taille_fichier;
+   read(desc,&taille_fichier,4);
+   char* nom = (char*)malloc(sizeof(char) * taille_nom);
+   read(desc,nom,taille_nom);
+   char* fichier = (char*)malloc(sizeof(char) * taille_fichier);
+   read(desc,fichier,taille_fichier);
+   ecriturePartition(part,nom,fichier);
+   delete[] fichier;
+   delete[] nom;
+ }
+ void ecriturePartition(int part, char* nom, char* fichier)
+ {
+   fstream f_fichier(nom,ios::out);
+   f_fichier >> fichier;
+   f_fichier.close();
+ }
+ void ecriturePartitionLeTempsQueLautreMecSeConnecteSurLeServeurCreeParLeClient(int part, char* nom, char* fichier)
+ {
+   fstream f_fichier(nom,ios::out);
+   f_fichier >> fichier;
+   f_fichier.close();
+ }
+
 
 void *threadReceptionServeurPrin(void *par)
 {
@@ -289,15 +316,15 @@ void *threadReceptionServeurPrin(void *par)
       perror("ThreadReceptionServeurPrin");
     }
 }
-/*
-pthread_t Client::creationThreadClient(int descBrCircuitVirtuel,struct sockaddr_in& adresse)
+
+pthread_t creationThreadClient(TableauClient* donneeClients,int descBrCircuitVirtuel,struct sockaddr_in& adresse)
 {
   pthread_t id;
   struct DescTableauClient* parametreThread = (struct DescTableauClient*)malloc(sizeof(struct DescTableauClient));
-  parametreThread->donneeClients = &donneeClients;
+  parametreThread->donneeClients = donneeClients;
   parametreThread->descClient = descBrCircuitVirtuel;
   parametreThread->adresse = adresse.sin_addr;
-  if(pthread_create(&id,NULL,thread_client,(void*)parametreThread) != 0)
+  if(pthread_create(&id,NULL,threadClient,(void*)parametreThread) != 0)
     {
       cout<<"Erreut thread creation"<<endl;
       return -1;
@@ -323,4 +350,4 @@ void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* para
     parametreClient->donneeClients->rmClient(rang);
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
   free(parametreClient);
-}*/
+}

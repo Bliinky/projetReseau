@@ -7,6 +7,13 @@ using namespace std;
 #include "DonneeClient.h"
 
 DonneeClient::DonneeClient(){}
+
+DonneeClient::DonneeClient(in_addr ip,int desc)
+{
+  this->ip = ip;
+  this->port = -1;
+  this->desc = desc;
+}
 DonneeClient::DonneeClient(in_addr ip,int port,int desc)
 {
   this->ip = ip;
