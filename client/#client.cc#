@@ -1,4 +1,4 @@
-#include <vector>
+
 #include "sock.h"
 #include "sockdist.h"
 #include <fstream>
@@ -8,8 +8,7 @@
 #include "pthread.h"
 #include "sys/types.h"
 #include "../structure/structure.h"
-#include "../structure/clientData/DonneeClient.h"
-#include "../structure/clientData/TableauClient.h"
+
 #include "client.h"
 
 Client::Client()

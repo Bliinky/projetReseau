@@ -1,11 +1,13 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 #include <iostream>
+#include <vector>
 #include "sock.h"
 #include "sockdist.h"
 #include "pthread.h"
 #include "sys/types.h"
-
+#include "../structure/clientData/DonneeClient.h"
+#include "../structure/clientData/TableauClient.h"
 using namespace std;
 
 
@@ -26,7 +28,8 @@ class Client
   Sock *sockPub;
   int descSockPub;
   int numeroPort;
-
+  TableauClient donneeClients;
+  
   pthread_t idThServPrin;
   Sock *sockServeur;
   int descSockServeur;
