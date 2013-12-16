@@ -25,8 +25,8 @@ struct protocoleRecupereClient
 struct protocoleEnvoieDonnee
 {
   int proto;
-  in_addr ip;
   int port;
+  in_addr ip;
 };
 
 //3

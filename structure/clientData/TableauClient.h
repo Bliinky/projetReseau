@@ -1,6 +1,6 @@
 #ifndef TABLEAUCLIENT_H
 #define TABLEAUCLIENT_H
-
+#include <vector>
 
 class TableauClient
 {

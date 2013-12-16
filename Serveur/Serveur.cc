@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -171,11 +172,11 @@ void envoieInformationClients(DonneeClient* donnee_client,struct DescTableauClie
      {
        if(parametreClient->donneeClients->getDonnee(i) != donnee_client)
        {
-	  struct protocoleEnvoieDonnee protocoleDonnee_client;
+	 struct protocoleEnvoieDonnee protocoleDonnee_client;
 	  protocoleDonnee_client.proto = 2;
-	  protocoleDonnee_client.ip = parametreClient->donneeClients->getDonnee(i)->getIp();
 	  protocoleDonnee_client.port = parametreClient->donneeClients->getDonnee(i)->getPort();
-	  write(parametreClient->descClient,&protocoleDonnee_client,sizeof(protocoleDonnee_client));
+	  protocoleDonnee_client.ip = parametreClient->donneeClients->getDonnee(i)->getIp();
+	  write(parametreClient->descClient,&protocoleDonnee_client,sizeof(protocoleEnvoieDonnee));
 	  //cout<<"Le client envoyé a l'ip "<<protocoleDonnee_client.ip<< " et le port "<<protocoleDonnee_client.port<<endl;
 	}
     }
