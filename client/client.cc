@@ -171,6 +171,22 @@ void Client::envoyerFichier(char* nomFichier)
 	      p1.taille_nom = sizeof(nomFichier);
 	      p1.taille_fichier = taille;
 	      strcpy(p1.n,buffer);
+	      
+	      Sock sockClient = Sock(SOCK_STREAM, 0);
+	      if(sockClient.good()) donneeClients.getDonnee(0)->setDesc(sockClient.getsDesc());
+	      else
+		{
+		  perror("ConnexionServeur");
+		  exit(1);
+		}
+	      cout << "Création de la socket client réussi" << endl;
+	      SockDist sockDistClient = SockDist(inet_ntoa(donneeClients.getDonnee(0)->getIp()), (short)donneeClients.getDonnee(0)->getPort());
+	      adrSockPub = sockDistServeur->getAdrDist();
+	      lgAdrSockPub = sizeof(struct sockaddr_in);
+
+	      int connexion = connect(donneeClients.getDonnee(0)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
+
+	      write(donneeClients.getDonnee(0)->getDesc(),&p1,4*sizeof(int)+taille*sizeof(char));
 
 	    }	  
 	}
