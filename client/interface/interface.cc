@@ -67,6 +67,7 @@ void Interface::run()
 	  break;
 	default:
 	  cout << "Entrée incorrecte !" << endl;
+	  selectionMenu = 99;
 	  break;
 	}  
     }

@@ -10,9 +10,20 @@
 
 using namespace std;
 
+
+struct p
+{
+  int proto;
+  int part;
+  int taille_nom;
+  int taille_fichier;
+  char n[60000];
+  };
+
 class Client
 {
  private :
+  char cheminFichiers[255];
   pthread_t idThServ;
   Sock *sockPub;
   int descSockPub;

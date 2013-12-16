@@ -10,9 +10,13 @@
 
 Client::Client()
 {
+  setDescSockServeur(-2); // Pour vérifier si le descripteur est utilisé
+
   char port[6];
   fstream infoClientFile("infoClient.txt", fstream::in);
   infoClientFile.getline(port,6);
+  infoClientFile.getline(cheminFichiers,255);
+  infoClientFile.close();
 
   setPort(atoi(port));
 
@@ -59,7 +63,7 @@ void Client::fermeturePortEcoute()
 
 void Client::connexionServeur()
 {
-  if(descSockServeur != NULL)
+  if(descSockServeur != -2)
     {
       deconnexionServeur();
     }
@@ -77,6 +81,8 @@ void Client::connexionServeur()
   fstream infoServeurFile("infoServeur.txt", fstream::in);
   infoServeurFile.getline(adresse,255);
   infoServeurFile.getline(port,6);
+  infoServeurFile.close();
+
   serveurPort = atoi(port);
 
   sockDistServeur = new SockDist(adresse, (short)serveurPort);
@@ -111,7 +117,7 @@ void Client::connexionServeur()
 void Client::deconnexionServeur()
 {
   close(descSockServeur);
-  descSockServeur = 0;
+  descSockServeur = -2;
   
   pthread_cancel(idThServPrin);
   if(pthread_join(idThServPrin, NULL) != 0)
@@ -123,30 +129,69 @@ void Client::deconnexionServeur()
 
 void Client::envoyerFichier(char* nomFichier)
 {
-  cout << "aaa" << endl;
   fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
   char fileName[255];
-  while(infoClientFile.good())
+  while(infoClientFile.getline(fileName,255))
     {
-      
-      infoClientFile.getline(fileName,255);
       char * tok;
       tok = strtok(fileName,"\"");
       tok = strtok(NULL,"\"");
-      cout << tok << endl;
+      if(strcmp(tok,nomFichier) == 0)
+	{ 
+	  char cheminFichierEnvoi[255];
+	  strcpy(cheminFichierEnvoi,cheminFichiers);
+	  strcat(cheminFichierEnvoi,nomFichier);
+	  cout << "Envoie du fichier : " << cheminFichierEnvoi << endl;
+	  fstream fichierEnvoi(cheminFichierEnvoi, fstream::in);
+	  if(!fichierEnvoi.good())
+	    {
+	      fichierEnvoi.close();
+	      cout << "Erreur ouverture du fichier a envoyer" << endl;
+	    }
+	  else
+	    {
+	      fichierEnvoi.seekg(0,fichierEnvoi.end);
+	      int taille = fichierEnvoi.tellg();
+	      fichierEnvoi.seekg(0,fichierEnvoi.beg);
+	      
+	      char * buffer = new char [taille];
+	      
+	      fichierEnvoi.read (buffer,taille);
+
+	      
+	      struct p p1;
+	      p1.proto = 1;
+	      p1.part = 2;
+	      p1.taille_nom = sizeof(nomFichier);
+	      p1.taille_fichier = taille;
+	      strcpy(p1.n,buffer);
+
+	    }	  
+	}
+      else
+	{
+	  cout << "Fichier introuvable" << endl;
+	}
     }
   
 }
 
 void Client::recupererFichier(char* nomFichier)
 {
-  struct protocoleRecupereFichier req;
-  req.proto = 3;
-  req.part = 69;
-  strcpy(req.nom,nomFichier);
-  req.taille = strlen(req.nom);
-
-  write(descSockServeur,&req,sizeof(int)*3+req.taille);
+  if(descSockServeur == -2)
+    {
+      cout << "Vous n'etes pas connecté au serveur" << endl;
+    }
+  else
+    {
+      struct protocoleRecupereFichier req;
+      req.proto = 3;
+      req.part = 69;
+      strcpy(req.nom,nomFichier);
+      req.taille = strlen(req.nom);
+      
+      write(descSockServeur,&req,sizeof(int)*3+req.taille);
+    }
 }
 
 void Client::rafraichirClient()
