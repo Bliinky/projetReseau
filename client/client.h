@@ -5,6 +5,9 @@
 #include "sockdist.h"
 #include "pthread.h"
 #include "sys/types.h"
+#include <vector>
+#include "../structure/clientData/DonneeClient.h"
+#include "../structure/clientData/TableauClient.h"
 
 using namespace std;
 
