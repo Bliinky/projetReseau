@@ -1,4 +1,4 @@
-#include <vector>
+
 #include "sock.h"
 #include "sockdist.h"
 #include <fstream>
@@ -8,8 +8,7 @@
 #include "pthread.h"
 #include "sys/types.h"
 #include "../structure/structure.h"
-#include "../structure/clientData/DonneeClient.h"
-#include "../structure/clientData/TableauClient.h"
+
 #include "client.h"
 
 Client::Client()
@@ -113,7 +112,7 @@ void Client::connexionServeur()
   struct tableauDescServeur descServeur;
   descServeur.donneeClients = &donneeClients;
   descServeur.descServeur = descSockServeur;
-  
+  cout<<"non thread "<<	  descSockServeur<<endl;
   if(pthread_create(&idThServPrin,NULL,threadReceptionServeurPrin, &descServeur) != 0)
     {
       perror("ConnexionServeur");
@@ -172,22 +171,6 @@ void Client::envoyerFichier(char* nomFichier)
 	      p1.taille_nom = sizeof(nomFichier);
 	      p1.taille_fichier = taille;
 	      strcpy(p1.n,buffer);
-	      
-	      Sock sockClient = Sock(SOCK_STREAM, 0);
-	      if(sockClient.good()) donneeClients.getDonnee(0)->setDesc(sockClient.getsDesc());
-	      else
-		{
-		  perror("ConnexionServeur");
-		  exit(1);
-		}
-	      cout << "Création de la socket client réussi" << endl;
-	      SockDist sockDistClient = SockDist(inet_ntoa(donneeClients.getDonnee(0)->getIp()), (short)donneeClients.getDonnee(0)->getPort());
-	      adrSockPub = sockDistServeur->getAdrDist();
-	      lgAdrSockPub = sizeof(struct sockaddr_in);
-
-	      int connexion = connect(donneeClients.getDonnee(0)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
-
-	      write(donneeClients.getDonnee(0)->getDesc(),&p1,4*sizeof(int)+taille*sizeof(char));
 
 	    }	  
 	}
@@ -291,6 +274,8 @@ void *threadPortEcoute(void *par)
 	    }
 	  
 	}
+      
+      
     }
   
   pthread_exit(NULL);
@@ -352,26 +337,32 @@ void *threadClient(void *par)
 
 void *threadReceptionServeurPrin(void *par)
 {
-  struct tableauDescServeur * descServeur= (struct tableauDescServeur *)par;
+  struct tableauDescServeur *  descServeur= (struct tableauDescServeur *)par;
+  int test = descServeur->descServeur;
+  TableauClient *t = descServeur->donneeClients;
   int proto;
   int fermeture;
-  while((fermeture = read(descServeur->descServeur,&proto,4)) > 0)
+  while((fermeture = read(test,&proto,4)) > 0)
     {
       switch(proto)
 	{
 	case 2:
+	  {
 	  in_addr ip;
 	  int port;
-	  read(descServeur->descServeur,&ip,4);
-	  read(descServeur->descServeur,&port,4);
-	  pthread_mutex_lock(&(descServeur->donneeClients->getVerrou()));
-	  while(!descServeur->donneeClients->getDonnee().empty())
+	  read(test,&port,4);
+	  read(test,&ip,4);
+	  DonneeClient * d = new DonneeClient(ip,port,-2);
+	  t->pushClient(d);
+	  //pthread_mutex_lock(&(descServeur->donneeClients->getVerrou()));
+	  /*	  while(!descServeur->donneeClients->getDonnee().empty())
 	    {
 	      descServeur->donneeClients->rmClient(0);
-	    }
-	  descServeur->donneeClients->pushClient(new DonneeClient(ip,port));
-	  pthread_mutex_unlock(&(descServeur->donneeClients->getVerrou()));
+	      }*/
+	  //descServeur->donneeClients->pushClient(new DonneeClient(ip,port,-2));
+	  //pthread_mutex_unlock(&(descServeur->donneeClients->getVerrou()));
 	  break;
+	  }
 	}
     }
   if(fermeture == 0)
