@@ -24,8 +24,8 @@ class Interface
 
   void rafraichirClient();
 
-  void envoyerFichier();
-  void recupererFichier(char[]);
+  void envoyerFichier(char *);
+  void recupererFichier(char *);
 
 };
 

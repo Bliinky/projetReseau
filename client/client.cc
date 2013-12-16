@@ -123,14 +123,17 @@ void Client::deconnexionServeur()
 
 void Client::envoyerFichier(char* nomFichier)
 {
-  fstream infoClientFile("infoFichiers.txt", fstream::in);
+  cout << "aaa" << endl;
+  fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
   char fileName[255];
   while(infoClientFile.good())
     {
       
-      infoClientFile.getLine(fileName,255);
+      infoClientFile.getline(fileName,255);
       char * tok;
-      tok = strtok(fileName,";");
+      tok = strtok(fileName,"\"");
+      tok = strtok(NULL,"\"");
+      cout << tok << endl;
     }
   
 }
@@ -189,7 +192,7 @@ int Client::getPort()
 void *threadPortEcoute(void *par)
 {
   int *descSockPub = (int *)par;
-  TableauClient clients;
+  //TableauClient clients;
   
   if(listen(*descSockPub,10) != 0)
     {
@@ -213,11 +216,12 @@ void *threadPortEcoute(void *par)
       else
 	{
 	  cout << "Nouvelle connection" << endl;
-	  (*idThClient) = creationThreadClient(descSockCv, sockCV);
+	  /* (*idThClient) = creationThreadClient(descSockCv, sockCV);
 	  if((*idThClient) == -1)
 	    {
 	      close(descSockCV);
 	    }
+	  */
 	}
       
       
@@ -225,7 +229,7 @@ void *threadPortEcoute(void *par)
   
   pthread_exit(NULL);
 }
-
+/*
 void *threadClient(void *par)
 {
   struct DescTableauClient* parametreClient = (struct DescTableauCLient*)par;
@@ -255,7 +259,7 @@ void *threadClient(void *par)
   pthread_exit(par);
 }
 
-void creationThreadPartition(
+*/
 
 void *threadReceptionServeurPrin(void *par)
 {
@@ -285,7 +289,7 @@ void *threadReceptionServeurPrin(void *par)
       perror("ThreadReceptionServeurPrin");
     }
 }
-
+/*
 pthread_t Client::creationThreadClient(int descBrCircuitVirtuel,struct sockaddr_in& adresse)
 {
   pthread_t id;
@@ -319,4 +323,4 @@ void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* para
     parametreClient->donneeClients->rmClient(rang);
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
   free(parametreClient);
-}
+}*/

@@ -55,9 +55,9 @@ void Interface::run()
 	  break;
 	case 6:
 	  cout << "Nom du fichier ?" << endl;
-	  char nomFichier[255];
-	  cin >> nomFichier;
-	  recupererFichier(nomFichier);
+	  char nomFichierRecup[255];
+	  cin >> nomFichierRecup;
+	  recupererFichier(nomFichierRecup);
 	  break;
 	case 7:
 	  rafraichirClient();
