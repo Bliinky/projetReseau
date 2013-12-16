@@ -360,18 +360,20 @@ void *threadReceptionServeurPrin(void *par)
       switch(proto)
 	{
 	case 2:
-	  in_addr ip;
-	  int port;
-	  read(descServeur->descServeur,&ip,4);
-	  read(descServeur->descServeur,&port,4);
-	  pthread_mutex_lock(&(descServeur->donneeClients->getVerrou()));
+	  {
+	    in_addr ip;
+	    int port;
+	    read(descServeur->descServeur,&ip,4);
+	    read(descServeur->descServeur,&port,4);
+	  /*pthread_mutex_lock(&(descServeur->donneeClients->getVerrou()));
 	  while(!descServeur->donneeClients->getDonnee().empty())
 	    {
 	      descServeur->donneeClients->rmClient(0);
 	    }
 	  descServeur->donneeClients->pushClient(new DonneeClient(ip,port));
-	  pthread_mutex_unlock(&(descServeur->donneeClients->getVerrou()));
-	  break;
+	  pthread_mutex_unlock(&(descServeur->donneeClients->getVerrou()));*/
+	    break;
+	  }
 	}
     }
   if(fermeture == 0)
