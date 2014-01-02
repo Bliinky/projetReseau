@@ -307,6 +307,7 @@ void *threadPortEcoute(void *par)
 
 void *threadClient(void *par)
 {
+  cout<<"Il y a un nouveau client de connecté"<<endl;
   struct DescTableauClient* parametreClient = (struct DescTableauClient*)par;
   int en_tete = -1;
   int isPresent;
@@ -347,6 +348,7 @@ void *threadClient(void *par)
  }
  void ecriturePartition(int part, char* nom, char* fichier)
  {
+   cout<<"Lancement ecriturePartition"<<endl;
    fstream f_fichier(nom,ios::out);
    f_fichier >> fichier;
    f_fichier.close();

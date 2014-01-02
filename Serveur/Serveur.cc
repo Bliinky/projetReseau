@@ -25,6 +25,7 @@ Serveur::Serveur()
   brPublic = new Sock(SOCK_STREAM, 0);
   if(brPublic->good()){descBrPublic = brPublic->getsDesc();}
   else{cout<<"Probleme initialisation de la socket"<<endl; 
+    delete brPublic;
     exit(-1);}
   listen(descBrPublic,100);
 }

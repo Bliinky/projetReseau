@@ -4,7 +4,7 @@ CFLAGS=-g
 
 
 Serveur: DonneeThread.o TableauThread.o DonneeClient.o TableauClient.o sock.o sockdist.o principal.o Serveur.o 
-	$(CC) -o Serveur principal.o Serveur.o DonneeClient.o TableauClient.o sock.o sockdist.o DonneeThread.o TableauThread.o -lpthread
+	$(CC) -o Serveur principal.o Serveur.o DonneeClient.o TableauClient.o sock.o sockdist.o DonneeThread.o TableauThread.o -lpthread -g
 
 DonneeThread.o: threadData/DonneeThread.cc
 	$(CC) $(CFLAGS) -c threadData/DonneeThread.cc
