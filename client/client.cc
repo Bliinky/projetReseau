@@ -293,9 +293,11 @@ void *threadPortEcoute(void *par)
       else
 	{
 	  cout << "Nouvelle connection" << endl;
-	  (*idThClient) = creationThreadClient(&donneeClients,descSockCV,sockCV);
+	  idThClient = creationThreadClient(&donneeClients,descSockCV,sockCV);
+	  cout<<"yolo"<<endl;
 	  if((*idThClient) == -1)
 	    {
+	      cout<<"Problème pthread_t"<<endl;
 	      close(descSockCV);
 	    }
 	  
@@ -340,24 +342,28 @@ void *threadClient(void *par)
    read(desc,&taille_nom,4);
    int taille_fichier;
    read(desc,&taille_fichier,4);
+   cout<<"taille nom fichier "<<taille_nom<<endl;
    char* nom = (char*)malloc(sizeof(char) * taille_nom);
    read(desc,nom,taille_nom);
+   cout<<"taille fichier"<<taille_fichier<<endl;
    char* fichier = (char*)malloc(sizeof(char) * taille_fichier);
    read(desc,fichier,taille_fichier);
    ecriturePartition(part,nom,fichier);
-   delete[] fichier;
-   delete[] nom;
+   free(fichier);
+   free(nom);
  }
  void ecriturePartition(int part, char* nom, char* fichier)
  {
    cout<<"Lancement ecriturePartition"<<endl;
-   fstream f_fichier(nom,ios::out);
-   f_fichier >> fichier;
+   cout<<"Nom fichier "<<nom<<endl;
+   cout<<"fichier "<<fichier<<endl;
+   fstream f_fichier(nom,ios::in|ios::out);
+   f_fichier << fichier;
    f_fichier.close();
  }
  void ecriturePartitionLeTempsQueLautreMecSeConnecteSurLeServeurCreeParLeClient(int part, char* nom, char* fichier)
  {
-   fstream f_fichier(nom,ios::out);
+   fstream f_fichier(nom,ios::in);
    f_fichier >> fichier;
    f_fichier.close();
  }
@@ -412,20 +418,21 @@ void *threadReceptionServeurPrin(void *par)
   free(descServeur);
 }
 
-pthread_t creationThreadClient(TableauClient* donneeClients,int descBrCircuitVirtuel,struct sockaddr_in& adresse)
+pthread_t* creationThreadClient(TableauClient* donneeClients,int descBrCircuitVirtuel,struct sockaddr_in& adresse)
 {
-  pthread_t id;
+  pthread_t* id = (pthread_t*)malloc(sizeof(pthread_t));
   struct DescTableauClient* parametreThread = (struct DescTableauClient*)malloc(sizeof(struct DescTableauClient));
   parametreThread->donneeClients = donneeClients;
   parametreThread->descClient = descBrCircuitVirtuel;
   parametreThread->adresse = adresse.sin_addr;
-  if(pthread_create(&id,NULL,threadClient,(void*)parametreThread) != 0)
+  if(pthread_create(id,NULL,threadClient,(void*)parametreThread) != 0)
     {
       cout<<"Erreut thread creation"<<endl;
-      return -1;
+      return NULL;
     }
   else
     {
+      cout<<"hho"<<endl;
       return id;
     }
 }

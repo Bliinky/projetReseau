@@ -65,7 +65,7 @@ void *threadPortEcoute(void *);
 void *threadClient(void *);
 void *threadReceptionServeurPrin(void *par);
 void portIpClient(TableauClient*, int);
-pthread_t creationThreadClient(TableauClient*, int, struct sockaddr_in&);
+pthread_t* creationThreadClient(TableauClient*, int, struct sockaddr_in&);
 void suppresionClient(DonneeClient*, struct DescTableauClient*, int);
 void recuperationPartition(int);
 void ecriturePartition(int,char*,char*);
