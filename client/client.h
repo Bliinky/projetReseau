@@ -17,7 +17,7 @@ struct p
   int part;
   int taille_nom;
   int taille_fichier;
-  char n[60000];
+  char n[600];
   };
 
 class Client
@@ -68,5 +68,5 @@ void portIpClient(TableauClient*, int);
 pthread_t* creationThreadClient(TableauClient*, int, struct sockaddr_in&);
 void suppresionClient(DonneeClient*, struct DescTableauClient*, int);
 void recuperationPartition(int);
-void ecriturePartition(int,char*,char*);
+void ecriturePartition(int,char*,char*,int);
 #endif

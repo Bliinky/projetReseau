@@ -167,19 +167,26 @@ void Client::envoyerFichier(char* nomFichier)
 	      p1.taille_nom = strlen(nomFichier);
 	      p1.taille_fichier = taille;
 	      strcpy(p1.n,nomFichier);
-	      int i = strlen(p1.n);
+	      char c;
+	      for(int i=strlen(nomFichier); i< taille+strlen(nomFichier); i++)
+		{
+		  c = fichierEnvoi.get();
+		  cout << c;
+		  p1.n[i] = c;	
+		}
+	      cout << endl;
+	      fichierEnvoi.close();
+	      /*
 	      while(fichierEnvoi.good())
 		{
 		  char c = fichierEnvoi.get();
 		  if(fichierEnvoi.good())
 		    {
 		      cout<<c;
-		      p1.n[i] = c ;
-		      i++;
+		      strcat(p1.n,&c);
 		    }
 		}
-	      cout<<endl;
-
+	      */
 	      cout << p1.proto << p1.part << p1.taille_nom << p1.taille_fichier << p1.n << endl;
 	      
 	      Sock sockClient = Sock(SOCK_STREAM, 0);
@@ -356,20 +363,29 @@ void *threadClient(void *par)
    cout<<"taille fichier"<<taille_fichier<<endl;
    char* fichier = (char*)malloc(sizeof(char) * taille_fichier);
    read(desc,fichier,taille_fichier);
-   ecriturePartition(part,nom,fichier);
+   ecriturePartition(part,nom,fichier,taille_fichier);
    free(fichier);
    free(nom);
  }
- void ecriturePartition(int part, char* nom, char* fichier)
+void ecriturePartition(int part, char* nom, char* fichier, int taille)
  {
    cout<<"Lancement ecriturePartition"<<endl;
    cout<<"Nom fichier "<<nom<<endl;
-   cout<<"fichier "<<fichier<<endl;
+   cout<<"fichier "<<fichier<<endl;  
+   for(int i=0; i < taille; i++)
+     {
+       cout << fichier[i];
+     }
+   cout << endl;
    fstream f_fichier;
-   f_fichier.open(nom,ios::app|ios::out|ios::in);
+   f_fichier.open(nom,fstream::out);
    if(f_fichier.bad()) cout<<"error ouvertur"<<endl;
-   f_fichier.write(fichier,strlen(fichier));
+   for(int i=0; i < taille; i++)
+     {
+       f_fichier.put(fichier[i]);
+     }
    f_fichier.close();
+   cout << "fin de reception partition" << endl;
  }
  void ecriturePartitionLeTempsQueLautreMecSeConnecteSurLeServeurCreeParLeClient(int part, char* nom, char* fichier)
  {
