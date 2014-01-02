@@ -2,6 +2,7 @@
 #include <vector>
 #include <string.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 using namespace std;
 
 #include "DonneeClient.h"
@@ -51,4 +52,17 @@ DonneeClient& DonneeClient::operator=(const DonneeClient& client)
   this->ip = client.getIp();
   this->port = client.getPort();
   return *this;
+}
+
+bool DonneeClient::operator==(const DonneeClient& c)
+{
+  if(strcmp(inet_ntoa(this->ip), inet_ntoa(c.getIp())) == 0)
+    return  this->port == c.getPort();
+  else
+    return false;
+}
+
+void DonneeClient::toString()
+{
+  cout<<"Port: "<<port<<" et Ip "<<inet_ntoa(ip)<<endl;
 }

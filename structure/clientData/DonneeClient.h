@@ -30,7 +30,7 @@ class DonneeClient
      Operator =
    */
   DonneeClient& operator=(const DonneeClient&);
-
+  bool operator==(const DonneeClient&);
   //Assceseurs
   in_addr getIp()const;
   int getPort()const;
@@ -39,6 +39,7 @@ class DonneeClient
   void setIp(in_addr);
   void setPort(int);
   void setDesc(int);
+  void toString();
 };
 
 

@@ -109,11 +109,11 @@ void Client::connexionServeur()
   monPort.port = numeroPort;
   
   write(descSockServeur,&monPort,sizeof(struct protocoleEnvoiePort));
-  struct tableauDescServeur descServeur;
-  descServeur.donneeClients = &donneeClients;
-  descServeur.descServeur = descSockServeur;
+  struct tableauDescServeur* descServeur=(struct tableauDescServeur*)malloc(sizeof(struct tableauDescServeur));;
+  descServeur->donneeClients = &donneeClients;
+  descServeur->descServeur = descSockServeur;
   cout<<"non thread "<<	  descSockServeur<<endl;
-  if(pthread_create(&idThServPrin,NULL,threadReceptionServeurPrin, &descServeur) != 0)
+  if(pthread_create(&idThServPrin,NULL,threadReceptionServeurPrin, descServeur) != 0)
     {
       perror("ConnexionServeur");
       exit(1);
@@ -218,6 +218,14 @@ void Client::recupererFichier(char* nomFichier)
 
 void Client::rafraichirClient()
 {
+  pthread_mutex_lock(&(donneeClients.getVerrou()));
+  while(!(donneeClients.getDonnee().empty()))
+  {
+    cout<<"yolo"<<endl;
+    donneeClients.rmClient(0);
+  }
+  pthread_mutex_unlock(&(donneeClients.getVerrou()));
+  
   struct protocoleRecupereClient prot;
   prot.proto = 2;
 
@@ -350,34 +358,42 @@ void *threadClient(void *par)
    f_fichier.close();
  }
 
+void portIpClient(TableauClient* t, int desc)
+{
+  in_addr ip;
+  int port;
+  read(desc,&port,4);
+  read(desc,&ip,4);
+  DonneeClient * d = new DonneeClient(ip,port,-2);
+  pthread_mutex_lock(&(t->getVerrou()));
+  if(!(t->appartient(d)))
+  {
+    d->toString();
+    t->pushClient(d);
+  }
+  else
+    {
+      delete d;
+    }
+  pthread_mutex_unlock(&(t->getVerrou()));
+  
+}
 
 void *threadReceptionServeurPrin(void *par)
 {
   struct tableauDescServeur *  descServeur= (struct tableauDescServeur *)par;
-  int test = descServeur->descServeur;
+  int desc = descServeur->descServeur;
   TableauClient *t = descServeur->donneeClients;
   int proto;
   int fermeture;
-  while((fermeture = read(test,&proto,4)) > 0)
+  while((fermeture = read(desc,&proto,4)) > 0)
     {
       switch(proto)
 	{
 	case 2:
 	  {
-	  in_addr ip;
-	  int port;
-	  read(test,&port,4);
-	  read(test,&ip,4);
-	  DonneeClient * d = new DonneeClient(ip,port,-2);
-	  t->pushClient(d);
-	  //pthread_mutex_lock(&(descServeur->donneeClients->getVerrou()));
-	  /*	  while(!descServeur->donneeClients->getDonnee().empty())
-	    {
-	      descServeur->donneeClients->rmClient(0);
-	      }*/
-	  //descServeur->donneeClients->pushClient(new DonneeClient(ip,port,-2));
-	  //pthread_mutex_unlock(&(descServeur->donneeClients->getVerrou()));
-	  break;
+	    portIpClient(t,desc);
+	    break;
 	  }
 	}
     }
@@ -389,6 +405,7 @@ void *threadReceptionServeurPrin(void *par)
     {
       perror("ThreadReceptionServeurPrin");
     }
+  free(descServeur);
 }
 
 pthread_t creationThreadClient(TableauClient* donneeClients,int descBrCircuitVirtuel,struct sockaddr_in& adresse)

@@ -55,7 +55,17 @@ void TableauClient::pushClient(DonneeClient* d)
 {
   donnee.push_back(d);
 }
-
+bool TableauClient::appartient(DonneeClient* d)
+{
+  for(int i = 0 ; i < this->size() ; i++)
+    {
+      if(*(d) == *(donnee[i]))
+	{
+	  return true;
+	}
+    }
+  return false;
+}
 void TableauClient::rmClient(unsigned short int rang)
 {
   DonneeClient* copie = donnee[rang];

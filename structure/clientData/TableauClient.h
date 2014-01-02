@@ -47,6 +47,7 @@ class TableauClient
    * \param donneeClient Nouveau ensemble d'information d'un client
    */
   void pushClient(DonneeClient*);
+  bool appartient(DonneeClient*);
   /**
    * Suprime un ensemble d'information d'un client
    * \param rang Place dans le vecteur à rajouter
