@@ -161,16 +161,24 @@ void Client::envoyerFichier(char* nomFichier)
 	      fichierEnvoi.seekg(0,fichierEnvoi.beg);
 	      
 	      char * buffer = new char [taille];
-	      
-	      fichierEnvoi.read (buffer,taille);
-	      
 	      struct p p1;
 	      p1.proto = 1;
 	      p1.part = 2;
-	      p1.taille_nom = sizeof(nomFichier);
+	      p1.taille_nom = strlen(nomFichier);
 	      p1.taille_fichier = taille;
 	      strcpy(p1.n,nomFichier);
-	      strcat(p1.n,buffer);
+	      int i = strlen(p1.n);
+	      while(fichierEnvoi.good())
+		{
+		  char c = fichierEnvoi.get();
+		  if(fichierEnvoi.good())
+		    {
+		      cout<<c;
+		      p1.n[i] = c ;
+		      i++;
+		    }
+		}
+	      cout<<endl;
 
 	      cout << p1.proto << p1.part << p1.taille_nom << p1.taille_fichier << p1.n << endl;
 	      
@@ -188,8 +196,8 @@ void Client::envoyerFichier(char* nomFichier)
 
 	      int connexion = connect(donneeClients.getDonnee(0)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
 	      
-	      write(donneeClients.getDonnee(0)->getDesc(),&p1,4*sizeof(int)+sizeof(*nomFichier)+taille*sizeof(char));
-
+	      write(donneeClients.getDonnee(0)->getDesc(),&p1,4*sizeof(int)+strlen(nomFichier)+taille*sizeof(char));
+	      perror("write");
 	    }	  
 	}
       else
@@ -357,15 +365,15 @@ void *threadClient(void *par)
    cout<<"Lancement ecriturePartition"<<endl;
    cout<<"Nom fichier "<<nom<<endl;
    cout<<"fichier "<<fichier<<endl;
-   fstream f_fichier(nom,ios::in|ios::out);
-   f_fichier << fichier;
+   fstream f_fichier;
+   f_fichier.open(nom,ios::app|ios::out|ios::in);
+   if(f_fichier.bad()) cout<<"error ouvertur"<<endl;
+   f_fichier.write(fichier,strlen(fichier));
    f_fichier.close();
  }
  void ecriturePartitionLeTempsQueLautreMecSeConnecteSurLeServeurCreeParLeClient(int part, char* nom, char* fichier)
  {
-   fstream f_fichier(nom,ios::in);
-   f_fichier >> fichier;
-   f_fichier.close();
+   
  }
 
 void portIpClient(TableauClient* t, int desc)
