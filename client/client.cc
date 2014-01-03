@@ -303,20 +303,28 @@ void *threadEnvoyerFichier(void *par)
 
 	  int nbPartition = decouperFichier(cheminFichierEnvoi,TAILLE_PARTITION);
 	  int client = 0;
+	  strcat(cheminFichierEnvoi,".dos/");
+	  strcat(cheminFichierEnvoi,f->nomFichier);
 
 	  for(int i = 0; i < nbPartition; i++)
 	    {
+	      char nomFichierPart[255];
+	      char cheminFichierEnvoiPart[255];
+	      strcpy(cheminFichierEnvoiPart,cheminFichierEnvoi);
+	      strcpy(nomFichierPart,f->nomFichier);
+
 	      pthread_mutex_lock(&f->donneeClients->getVerrou());
 	      (client > f->donneeClients->size()) ? client = 0 : client = i;
 	      pthread_mutex_unlock(&f->donneeClients->getVerrou());
 
 	      char partition[5];
 	      sprintf(partition,"%d",client);
-	      strcat(cheminFichierEnvoi,".dos/");
-	      strcat(cheminFichierEnvoi,f->nomFichier);
-	      strcat(cheminFichierEnvoi,partition);
+	      strcat(cheminFichierEnvoiPart,partition);
+	      
+	      strcat(nomFichierPart,partition);
+
 	      cout << cheminFichierEnvoi << endl;
-	      fstream fichierEnvoi(cheminFichierEnvoi, fstream::in);
+	      fstream fichierEnvoi(cheminFichierEnvoiPart, fstream::in);
 	      if(!fichierEnvoi.good())
 		{
 		  fichierEnvoi.close();
@@ -331,13 +339,13 @@ void *threadEnvoyerFichier(void *par)
 		  char * buffer = new char[taille];
 		  struct protocoleEnvoieFichier p1;
 		  p1.proto = 1;
-		  p1.part = 2;
+		  p1.part = i;
 		  p1.nbPartition = nbPartition;
-		  p1.taille_nom = strlen(strcat(f->nomFichier,partition));
+		  p1.taille_nom = strlen(nomFichierPart);
 		  p1.taille_fichier = taille;
-		  strcpy(p1.n,strcat(f->nomFichier,partition));
+		  strcpy(p1.n,nomFichierPart);
 		  char c;
-		  for(int i=strlen(f->nomFichier); i< taille+strlen(f->nomFichier); i++)
+		  for(int i=strlen(nomFichierPart); i< taille+strlen(nomFichierPart); i++)
 		    {
 		      c = fichierEnvoi.get();
 		      cout << c;
@@ -361,9 +369,10 @@ void *threadEnvoyerFichier(void *par)
 		  
 		  int connexion = connect(f->donneeClients->getDonnee(client)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
 		  
-		  write(f->donneeClients->getDonnee(client)->getDesc(),&p1,4*sizeof(int)+strlen(strcat(f->nomFichier,partition))+taille*sizeof(char));
+		  write(f->donneeClients->getDonnee(client)->getDesc(),&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
 		  perror("write");
-		  pthread_mutex_unlock(&f->donneClients->getVerrou());
+		  pthread_mutex_unlock(&f->donneeClients->getVerrou());
+		  delete buffer;
 		}
 	      cout << "Fichier envoyé" << endl;
 	    }	  
