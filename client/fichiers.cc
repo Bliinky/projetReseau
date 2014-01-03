@@ -31,7 +31,7 @@ int decouperFichier(const char* nom, int N)
   cout<<nomDossier<<endl;
   fstream f ;
   f.open(nom,fstream::in|fstream::out|fstream::app);
-  //rmdir(nomDossier);
+  rmdir(nomDossier);
   int dossierF = mkdir(nomDossier,0777);
   perror("mkdir");
   fstream* fPartition = NULL; 
@@ -61,6 +61,7 @@ int decouperFichier(const char* nom, int N)
     }
   free(nomDossier);
   delete fPartition;
+  //f.flush();
   f.close();
   return partition;
 }
@@ -125,12 +126,15 @@ int determineAction(char* nom, int part,int partTot)
     }
   if(!nomIsPresent)
     {
-      nom[strlen(nom) - strlen(p)] = '\0';
+      char n[255];
+      strcpy(n,nom);
+      n[strlen(nom) - strlen(p)] = '\0';
       //Création dossier
       char dosNom[255];
-      strcpy(dosNom,nom);
-      strcat(dosNom,".dos");
-      mkdir(dosNom,0666);
+      strcpy(dosNom,n);
+      strcat(dosNom,".dos/");
+      cout<<"Création dossier "<<dosNom<<endl;
+      mkdir(dosNom,0777);
 
       //Création ligne infoFichiers
       char line[1000];
@@ -146,6 +150,8 @@ int determineAction(char* nom, int part,int partTot)
     }
   f.close();
   fCopy.close();
+  fCopy.flush();
+  f.flush();
   remove("fichiers/infoFichiers.txt");
   rename("fichiers/infoFichiersCopy.txt","fichiers/infoFichiers.txt");
   return 1;
@@ -154,17 +160,26 @@ int determineAction(char* nom, int part,int partTot)
 
 void ajouterPartition(char* nom,int part, char* fichier, int taille)
 {
+  char p[10];
+  sprintf(p,"%d",part);
+  char n[255];
+  strcpy(n,nom);
+  n[strlen(nom) - strlen(p)] = '\0';
   char nomDos[255];
-  strcpy(nomDos,nom);
-  strcat(nomDos,".dos");
-  
+  cout<<n<<endl;
+  strcpy(nomDos,n);
+  strcat(nomDos,".dos/");
+  strcat(nomDos,nom);
+  cout<<nomDos<<endl;
   fstream f_fichier;
   f_fichier.open(nomDos,fstream::out);
+  perror("open");
   if(f_fichier.bad()) cout<<"error ouverture"<<endl;
   for(int i=0; i < taille; i++)
     {
       f_fichier.put(fichier[i]);
     }
+  f_fichier.flush();
   f_fichier.close();
   cout << "fin de reception partition" << endl;
 }

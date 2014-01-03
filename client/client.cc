@@ -393,6 +393,7 @@ void *threadEnvoyerFichier(void *par)
  }
 void ecriturePartition(int part, char* nom, char* fichier, int taille,int nbPartition)
  {
+   cout<<"Le fichier "<<fichier<<endl;
    pthread_mutex_lock(&(mutexInfoFichier));
    int action = determineAction(nom,part,nbPartition);
    if(action)
