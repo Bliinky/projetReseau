@@ -7,8 +7,10 @@
 #include "pthread.h"
 #include "sys/types.h"
 #include "../structure/structure.h"
+#include "fichiers.h"
 
 #include "client.h"
+pthread_mutex_t mutexInfoFichier = PTHREAD_MUTEX_INITIALIZER;
 
 #define TAILLE_PARTITION 1000
 
@@ -288,7 +290,7 @@ void *threadEnvoyerFichier(void *par)
   while(infoClientFile.getline(fileName,255))
     {
       char * tok;
-      tok = strtok(fileName,"\"");
+      tok = strtok(fileName,"=");
       cout << tok << endl;
       cout << f->nomFichier << endl;
       if(strcmp(tok,f->nomFichier) == 0)
@@ -368,6 +370,8 @@ void *threadEnvoyerFichier(void *par)
  {
    int part;
    read(desc,&part,4);
+   int nbPartition;
+   read(desc,&nbPartition,4);
    int taille_nom;
    read(desc,&taille_nom,4);
    int taille_fichier;
@@ -378,33 +382,38 @@ void *threadEnvoyerFichier(void *par)
    cout<<"taille fichier"<<taille_fichier<<endl;
    char* fichier = (char*)malloc(sizeof(char) * taille_fichier);
    read(desc,fichier,taille_fichier);
-   ecriturePartition(part,nom,fichier,taille_fichier);
+   ecriturePartition(part,nom,fichier,taille_fichier,nbPartition);
    free(fichier);
    free(nom);
  }
-void ecriturePartition(int part, char* nom, char* fichier, int taille)
+void ecriturePartition(int part, char* nom, char* fichier, int taille,int nbPartition)
  {
-   cout<<"Lancement ecriturePartition"<<endl;
-   cout<<"Nom fichier "<<nom<<endl;
-   cout<<"fichier "<<fichier<<endl;  
-   for(int i=0; i < taille; i++)
+   pthread_mutex_lock(&(mutexInfoFichier));
+   int action = determineAction(nom,part,nbPartition);
+   if(action)
      {
-       cout << fichier[i];
+       ajouterPartition(nom,part,fichier,taille);
      }
-   cout << endl;
-   fstream f_fichier;
-   f_fichier.open(nom,fstream::out);
-   if(f_fichier.bad()) cout<<"error ouvertur"<<endl;
-   for(int i=0; i < taille; i++)
-     {
-       f_fichier.put(fichier[i]);
-     }
-   f_fichier.close();
-   cout << "fin de reception partition" << endl;
+   pthread_mutex_unlock(&(mutexInfoFichier));
  }
  void ecriturePartitionLeTempsQueLautreMecSeConnecteSurLeServeurCreeParLeClient(int part, char* nom, char* fichier)
  {
-   
+   //Prendre le verrou sur le fichier infofichiers.txt
+   //Chercher le nom de fichier dans se fichier 
+   //Si le fichier existe pas dans infofichier:
+   ////L'ajouter dans infoFichier et crée le dossier correspondant
+   //Sinon
+   ////Regarder si la partition existe deja
+   ////Si la partition existe
+   //////S'arreter
+   ////Sinon
+   //////Ajouter la partition dans le dossier et dans infofichier.txt*
+   /*pthread_mutex_lock(&(mutexInfoFichier));
+   int action = choixAction(nom);
+   if(action)
+     {
+     }
+     pthread_mutex_unlock(&(mutexInfoFichier));*/
  }
 
 void portIpClient(TableauClient* t, int desc)

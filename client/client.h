@@ -76,5 +76,6 @@ void portIpClient(TableauClient*, int);
 pthread_t* creationThreadClient(TableauClient*, int, struct sockaddr_in&);
 void suppresionClient(DonneeClient*, struct DescTableauClient*, int);
 void recuperationPartition(int);
-void ecriturePartition(int,char*,char*,int);
+void ecriturePartition(int,char*,char*,int,int);
+int choixAction();
 #endif
