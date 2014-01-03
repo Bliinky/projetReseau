@@ -306,12 +306,16 @@ void *threadEnvoyerFichier(void *par)
 
 	  for(int i = 0; i < nbPartition; i++)
 	    {
+	      
 	      (client > f->donneeClients->size()) ? client = 0 : client = i; 
 
 	      char partition[5];
 	      sprintf(partition,"%d",client);
-
-	      fstream fichierEnvoi(strcat(strcat(cheminFichierEnvoi,".doc"),partition), fstream::in);
+	      strcat(cheminFichierEnvoi,".dos/");
+	      strcat(cheminFichierEnvoi,f->nomFichier);
+	      strcat(cheminFichierEnvoi,partition);
+	      cout << cheminFichierEnvoi << endl;
+	      fstream fichierEnvoi(cheminFichierEnvoi, fstream::in);
 	      if(!fichierEnvoi.good())
 		{
 		  fichierEnvoi.close();
@@ -328,9 +332,9 @@ void *threadEnvoyerFichier(void *par)
 		  p1.proto = 1;
 		  p1.part = 2;
 		  p1.nbPartition = nbPartition;
-		  p1.taille_nom = strlen(f->nomFichier);
+		  p1.taille_nom = strlen(strcat(f->nomFichier,partition));
 		  p1.taille_fichier = taille;
-		  strcpy(p1.n,f->nomFichier);
+		  strcpy(p1.n,strcat(f->nomFichier,partition));
 		  char c;
 		  for(int i=strlen(f->nomFichier); i< taille+strlen(f->nomFichier); i++)
 		    {
@@ -355,7 +359,7 @@ void *threadEnvoyerFichier(void *par)
 		  
 		  int connexion = connect(f->donneeClients->getDonnee(client)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
 		  
-		  write(f->donneeClients->getDonnee(client)->getDesc(),&p1,4*sizeof(int)+strlen(f->nomFichier)+taille*sizeof(char));
+		  write(f->donneeClients->getDonnee(client)->getDesc(),&p1,4*sizeof(int)+strlen(strcat(f->nomFichier,partition))+taille*sizeof(char));
 		  perror("write");
 		}
 	      cout << "Fichier envoyé" << endl;

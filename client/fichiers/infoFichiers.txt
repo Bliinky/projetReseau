@@ -1,3 +1,3 @@
-toto.png=10;20\10\9\8\11\12\
-patate.png=17;100\17\
+toto.png=10;20\10\9\8\11\12\2\patate.png=17;100\17\
 pata.png=17;100\17\
+toto.png0=1;1\2\
