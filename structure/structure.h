@@ -12,9 +12,10 @@ struct protocoleEnvoieFichier
 {
   int proto;
   int part;
+  int nbPartition;
   int taille_nom;
   int taille_fichier;
-  char nom_et_fichier[60000];
+  char n[60000];
 };
 //2
 

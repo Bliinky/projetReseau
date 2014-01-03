@@ -1,8 +1,11 @@
 CC=g++
 CFLAGS=-g
 
-client: client.o main.o sock.o sockdist.o interface.o DonneeClient.o TableauClient.o
-	$(CC) -o client main.o client.o interface.o sock.o sockdist.o DonneeClient.o TableauClient.o -lpthread
+client: client.o main.o sock.o sockdist.o interface.o DonneeClient.o TableauClient.o fichiers.o
+	$(CC) -o client main.o client.o interface.o sock.o sockdist.o DonneeClient.o TableauClient.o fichiers.o -lpthread
+
+fichiers.o: fichiers.cc
+	$(CC) $(CFLAGS) -c fichiers.cc
 
 main.o: main.cc
 	$(CC) $(CFLAGS) -c main.cc
