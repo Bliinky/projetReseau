@@ -314,7 +314,11 @@ void *threadEnvoyerFichier(void *par)
 	      strcpy(nomFichierPart,f->nomFichier);
 
 	      pthread_mutex_lock(&f->donneeClients->getVerrou());
-	      (client > f->donneeClients->size()) ? client = 0 : client = i;
+	      client = i;
+	      if(client > f->donneeClients->size()-1)
+		{
+		  client = 0;
+		}
 	      pthread_mutex_unlock(&f->donneeClients->getVerrou());
 
 	      char partition[5];
@@ -351,7 +355,7 @@ void *threadEnvoyerFichier(void *par)
 		      cout << c;
 		      p1.n[i] = c;	
 		    }
-		  cout << endl;
+		  cout << "Fin lecture fichier" << endl;
 		  fichierEnvoi.close();
 		  
 		  pthread_mutex_lock(&f->donneeClients->getVerrou());

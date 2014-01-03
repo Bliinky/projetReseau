@@ -3,5 +3,3 @@ toto2.png=10;7\
 patate.png=17;100\17\
 pata.png=17;100\17\
 toto.png0=1;1\0\
-toto2.png0
-toto2.png0êµà0∂=1;60\19\
