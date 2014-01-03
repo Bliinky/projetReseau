@@ -9,17 +9,20 @@
 #include <sys/types.h>
 
 using namespace std;
+#include "fichiers.h"
 
 
-
-int decoupeFichier(const char* nom, int N)
+int decouperFichier(const char* nom, int N)
 {
-  char* nomDossier = (char*)malloc(sizeof(char) * strlen(nom) + 3);
+  char* nomDossier = (char*)malloc(sizeof(char) * strlen(nom) + 5);
   strcpy(nomDossier,nom);
-  strcat(nomDossier,".dos");
+  strcat(nomDossier,".dos/");
+  cout<<nomDossier<<endl;
   fstream f ;
   f.open(nom,fstream::in|fstream::out|fstream::app);
+  //rmdir(nomDossier);
   int dossierF = mkdir(nomDossier,0777);
+  perror("mkdir");
   fstream* fPartition = NULL; 
   int partition = 0;
   int parcoursNChar = 0;
@@ -78,8 +81,19 @@ int determineAction(char* nom, int part,int partTot)
 	    {
 	      if(strstr(line,partChar) == NULL)
 		{
-		  strcat(line,partChar+1);
-		  fCopy.write(line,strlen(line));
+		  char lineAdd[1000];
+		  strcpy(lineAdd,nom);
+		  strcat(line,"=");
+		  tok = strtok(NULL,";");
+		  int nbPart = atoi(tok);
+		  nbPart++;
+		  char nbPartChar[10];
+		  sprintf(nbPartChar,"%d",nbPart);
+		  strcat(lineAdd,nbPartChar);
+		  strcat(lineAdd,";");
+		  strcat(lineAdd,line + suiteCharBuffer(line,';'));
+		  strcat(lineAdd,partChar+1);
+		  fCopy.write(lineAdd,strlen(line));
 		  nomIsPresent=true;
 		}
 	      else
@@ -111,7 +125,7 @@ int determineAction(char* nom, int part,int partTot)
       sprintf(total,"%d",partTot);
       strcpy(line,nom);
       strcat(line,"=");
-      strcat(line,p);
+      strcat(line,"1");
       strcat(line,";");
       strcat(line,total);
       strcat(line,partChar);
@@ -141,4 +155,15 @@ void ajouterPartition(char* nom,int part, char* fichier, int taille)
   f_fichier.close();
   cout << "fin de reception partition" << endl;
 }
-    
+
+
+int suiteCharBuffer(char* buffer, char sep)
+{
+  for(int i = 0 ; i < strlen(buffer) ; i++)
+    {
+      if(sep == buffer[i])
+	{
+	  return i+1;
+	}
+    }
+} 
