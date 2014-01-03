@@ -8,6 +8,8 @@
 #include "sys/types.h"
 #include "../structure/clientData/DonneeClient.h"
 #include "../structure/clientData/TableauClient.h"
+#include "fichiers.h"
+
 using namespace std;
 
 struct envoieFichier

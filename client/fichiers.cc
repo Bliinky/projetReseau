@@ -12,7 +12,7 @@ using namespace std;
 
 
 
-int decoupeFichier(const char* nom, int N)
+int decouperFichier(const char* nom, int N)
 {
   char* nomDossier = (char*)malloc(sizeof(char) * strlen(nom) + 3);
   strcpy(nomDossier,nom);
