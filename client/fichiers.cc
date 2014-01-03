@@ -125,6 +125,7 @@ int determineAction(char* nom, int part,int partTot)
     }
   if(!nomIsPresent)
     {
+      nom[strlen(nom) - strlen(p)] = '\0';
       //Création dossier
       char dosNom[255];
       strcpy(dosNom,nom);

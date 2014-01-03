@@ -69,5 +69,5 @@ int decouperFichier(const char* nom, int N)
 
 int main()
 {
-  decouperFichier("fichiers/toto.png",100);
+  cout<<decouperFichier("fichiers/toto.png",100)<<endl;
 }
