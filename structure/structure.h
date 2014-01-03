@@ -15,7 +15,7 @@ struct protocoleEnvoieFichier
   int nbPartition;
   int taille_nom;
   int taille_fichier;
-  char n[60000];
+  char n[2000];
 };
 //2
 

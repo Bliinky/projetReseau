@@ -12,6 +12,7 @@ using namespace std;
 #include "fichiers.h"
 
 
+
 int decouperFichier(const char* nom, int N)
 {
   char* nomDossier = (char*)malloc(sizeof(char) * strlen(nom) + 5);

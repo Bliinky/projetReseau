@@ -287,14 +287,15 @@ void *threadEnvoyerFichier(void *par)
 
   fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
   char fileName[255];
-  while(infoClientFile.getline(fileName,255))
+  bool continuer = true;
+  while(infoClientFile.getline(fileName,255) && continuer)
     {
       char * tok;
       tok = strtok(fileName,"=");
-      cout << tok << endl;
-      cout << f->nomFichier << endl;
       if(strcmp(tok,f->nomFichier) == 0)
 	{ 
+	  continuer = false;
+	  
 	  char cheminFichierEnvoi[255];
 	  strcpy(cheminFichierEnvoi,"fichiers/");
 	  strcat(cheminFichierEnvoi,f->nomFichier);
@@ -305,12 +306,12 @@ void *threadEnvoyerFichier(void *par)
 
 	  for(int i = 0; i < nbPartition; i++)
 	    {
-	      (client > donneeClient->size()) ? client = 0 : client = i; 
+	      (client > f->donneeClients->size()) ? client = 0 : client = i; 
 
 	      char partition[5];
 	      sprintf(partition,"%d",client);
 
-	      fstream fichierEnvoi(strcat(cheminFichierEnvoi,partition), fstream::in);
+	      fstream fichierEnvoi(strcat(strcat(cheminFichierEnvoi,".doc"),partition), fstream::in);
 	      if(!fichierEnvoi.good())
 		{
 		  fichierEnvoi.close();
@@ -323,9 +324,10 @@ void *threadEnvoyerFichier(void *par)
 		  fichierEnvoi.seekg(0,fichierEnvoi.beg);
 		  		  
 		  char * buffer = new char[taille];
-		  struct p p1;
+		  struct protocoleEnvoieFichier p1;
 		  p1.proto = 1;
 		  p1.part = 2;
+		  p1.nbPartition = nbPartition;
 		  p1.taille_nom = strlen(f->nomFichier);
 		  p1.taille_fichier = taille;
 		  strcpy(p1.n,f->nomFichier);
@@ -358,10 +360,6 @@ void *threadEnvoyerFichier(void *par)
 		}
 	      cout << "Fichier envoyé" << endl;
 	    }	  
-	}
-      else
-	{
-	  cout << "Fichier introuvable" << endl;
 	}
     }
 }
