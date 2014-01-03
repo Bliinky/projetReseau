@@ -10,16 +10,6 @@
 #include "../structure/clientData/TableauClient.h"
 using namespace std;
 
-
-struct p
-{
-  int proto;
-  int part;
-  int taille_nom;
-  int taille_fichier;
-  char n[600];
-  };
-
 struct envoieFichier
 {
   char nomFichier[255];

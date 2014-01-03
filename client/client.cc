@@ -305,7 +305,7 @@ void *threadEnvoyerFichier(void *par)
 
 	  for(int i = 0; i < nbPartition; i++)
 	    {
-	      (client > donneeClient->size()) ? client = 0 : client = i; 
+	      (client > f->donneeClients->size()) ? client = 0 : client = i; 
 
 	      char partition[5];
 	      sprintf(partition,"%d",client);
@@ -323,9 +323,10 @@ void *threadEnvoyerFichier(void *par)
 		  fichierEnvoi.seekg(0,fichierEnvoi.beg);
 		  		  
 		  char * buffer = new char[taille];
-		  struct p p1;
+		  struct protocoleEnvoieFichier p1;
 		  p1.proto = 1;
 		  p1.part = 2;
+		  p1.nbPartition = nbPartition;
 		  p1.taille_nom = strlen(f->nomFichier);
 		  p1.taille_fichier = taille;
 		  strcpy(p1.n,f->nomFichier);
