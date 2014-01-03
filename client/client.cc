@@ -306,8 +306,9 @@ void *threadEnvoyerFichier(void *par)
 
 	  for(int i = 0; i < nbPartition; i++)
 	    {
-	      
-	      (client > f->donneeClients->size()) ? client = 0 : client = i; 
+	      pthread_mutex_lock(&f->donneeClients->getVerrou());
+	      (client > f->donneeClients->size()) ? client = 0 : client = i;
+	      pthread_mutex_unlock(&f->donneeClients->getVerrou());
 
 	      char partition[5];
 	      sprintf(partition,"%d",client);
@@ -345,6 +346,7 @@ void *threadEnvoyerFichier(void *par)
 		  cout << endl;
 		  fichierEnvoi.close();
 		  
+		  pthread_mutex_lock(&f->donneeClients->getVerrou());
 		  Sock sockClient = Sock(SOCK_STREAM, 0);
 		  if(sockClient.good()) f->donneeClients->getDonnee(client)->setDesc(sockClient.getsDesc());
 		  else
@@ -361,6 +363,7 @@ void *threadEnvoyerFichier(void *par)
 		  
 		  write(f->donneeClients->getDonnee(client)->getDesc(),&p1,4*sizeof(int)+strlen(strcat(f->nomFichier,partition))+taille*sizeof(char));
 		  perror("write");
+		  pthread_mutex_unlock(&f->donneClients->getVerrou());
 		}
 	      cout << "Fichier envoyé" << endl;
 	    }	  
