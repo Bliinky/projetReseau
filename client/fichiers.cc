@@ -15,6 +15,16 @@ using namespace std;
 
 int decouperFichier(const char* nom, int N)
 {
+  char nomFichier[255];
+  int pos=0;
+  for(int k = 0 ; k < strlen(nom) ; k++)
+    {
+      if(nom[k] == '/')
+	{
+	  pos=k;
+	}
+    }
+  strcpy(nomFichier,nom+pos);
   char* nomDossier = (char*)malloc(sizeof(char) * strlen(nom) + 5);
   strcpy(nomDossier,nom);
   strcat(nomDossier,".dos/");
@@ -33,7 +43,7 @@ int decouperFichier(const char* nom, int N)
 	{
 	  char* nom_partition =(char *)malloc(sizeof(char) * strlen(nom) * 2 + 20);
 	  strcpy(nom_partition,nomDossier);
-	  strcat(nom_partition,nom);
+	  strcat(nom_partition,nomFichier);
 	  char char_partition[20];
 	  sprintf(char_partition,"%d",partition);
 	  strcat(nom_partition,char_partition);
@@ -42,6 +52,7 @@ int decouperFichier(const char* nom, int N)
 	  delete fPartition;
 	  fPartition = new fstream();
 	  fPartition->open(nom_partition,fstream::in|fstream::out|fstream::app);
+	  perror("open");
 	  partition++;
 	  free(nom_partition);
 	}
