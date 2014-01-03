@@ -20,10 +20,17 @@ struct p
   char n[600];
   };
 
+struct envoieFichier
+{
+  char nomFichier[255];
+  TableauClient *donneeClients;
+  struct sockaddr_in *adrSockPub;
+  int lgAdrSockPub;
+};
+
 class Client
 {
  private :
-  char cheminFichiers[255];
   pthread_t idThServ;
   Sock *sockPub;
   int descSockPub;
@@ -62,6 +69,7 @@ class Client
 };
 
 void *threadPortEcoute(void *);
+void *threadEnvoyerFichier(void *);
 void *threadClient(void *);
 void *threadReceptionServeurPrin(void *par);
 void portIpClient(TableauClient*, int);

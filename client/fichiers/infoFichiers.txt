@@ -1,1 +1,1 @@
-dispo"toto.png"=idPart:dispo;idPart:dispo;idPart:dispo
+"toto.png"=nbPartition;nbPartitionTotal\1\2\....\N

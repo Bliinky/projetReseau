@@ -1,4 +1,3 @@
-
 #include "sock.h"
 #include "sockdist.h"
 #include <fstream>
@@ -11,6 +10,8 @@
 
 #include "client.h"
 
+#define TAILLE_PARTITION 1000
+
 Client::Client()
 {
   setDescSockServeur(-2); // Pour vérifier si le descripteur est utilisé
@@ -18,7 +19,6 @@ Client::Client()
   char port[6];
   fstream infoClientFile("infoClient.txt", fstream::in);
   infoClientFile.getline(port,6);
-  infoClientFile.getline(cheminFichiers,255);
   infoClientFile.close();
 
   setPort(atoi(port));
@@ -49,7 +49,6 @@ void Client::lancerPortEcoute()
   if(pthread_create(&idThServ, NULL, threadPortEcoute, &descSockPub) != 0)
     {
       perror("LancerPortEcoute");
-      exit(1);
     }
 }
 
@@ -75,7 +74,6 @@ void Client::connexionServeur()
   else
     {
       perror("ConnexionServeur");
-      exit(1);
     }
   cout << "Création de la socket serveur réussi" << endl;
  
@@ -99,7 +97,6 @@ void Client::connexionServeur()
   if(connexion != 0)
     {
       cout << "La connexion à " << adresse << ":" << serveurPort << " a échoué !" << endl;
-      exit(1);
     }
   
   cout << "Connexion établie avec le serveur" << endl;  
@@ -116,7 +113,6 @@ void Client::connexionServeur()
   if(pthread_create(&idThServPrin,NULL,threadReceptionServeurPrin, descServeur) != 0)
     {
       perror("ConnexionServeur");
-      exit(1);
     }
 }
 
@@ -134,85 +130,18 @@ void Client::deconnexionServeur()
 }
 
 void Client::envoyerFichier(char* nomFichier)
-{
-  fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
-  char fileName[255];
-  while(infoClientFile.getline(fileName,255))
-    {
-      char * tok;
-      tok = strtok(fileName,"\"");
-      tok = strtok(NULL,"\"");
-      if(strcmp(tok,nomFichier) == 0)
-	{ 
-	  char cheminFichierEnvoi[255];
-	  strcpy(cheminFichierEnvoi,cheminFichiers);
-	  strcat(cheminFichierEnvoi,nomFichier);
-	  cout << "Envoie du fichier : " << cheminFichierEnvoi << endl;
-	  fstream fichierEnvoi(cheminFichierEnvoi, fstream::in);
-	  if(!fichierEnvoi.good())
-	    {
-	      fichierEnvoi.close();
-	      cout << "Erreur ouverture du fichier a envoyer" << endl;
-	    }
-	  else
-	    {
-	      fichierEnvoi.seekg(0,fichierEnvoi.end);
-	      int taille = fichierEnvoi.tellg();
-	      fichierEnvoi.seekg(0,fichierEnvoi.beg);
-	      
-	      char * buffer = new char [taille];
-	      struct p p1;
-	      p1.proto = 1;
-	      p1.part = 2;
-	      p1.taille_nom = strlen(nomFichier);
-	      p1.taille_fichier = taille;
-	      strcpy(p1.n,nomFichier);
-	      char c;
-	      for(int i=strlen(nomFichier); i< taille+strlen(nomFichier); i++)
-		{
-		  c = fichierEnvoi.get();
-		  cout << c;
-		  p1.n[i] = c;	
-		}
-	      cout << endl;
-	      fichierEnvoi.close();
-	      /*
-	      while(fichierEnvoi.good())
-		{
-		  char c = fichierEnvoi.get();
-		  if(fichierEnvoi.good())
-		    {
-		      cout<<c;
-		      strcat(p1.n,&c);
-		    }
-		}
-	      */
-	      cout << p1.proto << p1.part << p1.taille_nom << p1.taille_fichier << p1.n << endl;
-	      
-	      Sock sockClient = Sock(SOCK_STREAM, 0);
-	      if(sockClient.good()) donneeClients.getDonnee(0)->setDesc(sockClient.getsDesc());
-	      else
-		{
-		  perror("ConnexionClient");
-		  exit(1);
-		}
-	      cout << "Création de la socket client réussi" << endl;
-	      SockDist sockDistClient = SockDist(inet_ntoa(donneeClients.getDonnee(0)->getIp()), (short)donneeClients.getDonnee(0)->getPort());
-	      adrSockPub = sockDistClient.getAdrDist();
-	      lgAdrSockPub = sizeof(struct sockaddr_in);
+{ 
+  struct envoieFichier *f = (struct envoieFichier *)malloc(sizeof(struct envoieFichier));
+  strcpy(f->nomFichier,nomFichier);
+  f->donneeClients = &donneeClients;
+  f->adrSockPub = adrSockPub;
+  f->lgAdrSockPub = lgAdrSockPub;
 
-	      int connexion = connect(donneeClients.getDonnee(0)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
-	      
-	      write(donneeClients.getDonnee(0)->getDesc(),&p1,4*sizeof(int)+strlen(nomFichier)+taille*sizeof(char));
-	      perror("write");
-	    }	  
-	}
-      else
-	{
-	  cout << "Fichier introuvable" << endl;
-	}
+  pthread_t envoieFichier;
+  if(pthread_create(&envoieFichier,NULL,threadEnvoyerFichier,f) != 0)
+    {
+      perror("EnvoieFichier");
     }
-  
 }
 
 void Client::recupererFichier(char* nomFichier)
@@ -309,7 +238,6 @@ void *threadPortEcoute(void *par)
 	{
 	  cout << "Nouvelle connection" << endl;
 	  idThClient = creationThreadClient(&donneeClients,descSockCV,sockCV);
-	  cout<<"yolo"<<endl;
 	  if((*idThClient) == -1)
 	    {
 	      cout<<"Problème pthread_t"<<endl;
@@ -347,6 +275,93 @@ void *threadClient(void *par)
     }
   suppresionClient(donnee_client,parametreClient,isPresent);
   pthread_exit(par);
+}
+
+void *threadEnvoyerFichier(void *par)
+{  
+  struct envoieFichier * f = (struct envoieFichier *)par;
+  struct sockaddr_in *adrSockPub = f->adrSockPub;
+  int lgAdrSockPub = f->lgAdrSockPub;  
+
+  fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
+  char fileName[255];
+  while(infoClientFile.getline(fileName,255))
+    {
+      char * tok;
+      tok = strtok(fileName,"\"");
+      cout << tok << endl;
+      cout << f->nomFichier << endl;
+      if(strcmp(tok,f->nomFichier) == 0)
+	{ 
+	  char cheminFichierEnvoi[255];
+	  strcpy(cheminFichierEnvoi,"fichiers/");
+	  strcat(cheminFichierEnvoi,f->nomFichier);
+	  cout << "Envoie du fichier : " << cheminFichierEnvoi << endl;
+
+	  int nbPartition = decouperFichier(cheminFichierEnvoi,TAILLE_PARTITION);
+	  int client = 0;
+
+	  for(int i = 0; i < nbPartition; i++)
+	    {
+	      (client > donneeClient->size()) ? client = 0 : client = i; 
+
+	      char partition[5];
+	      sprintf(partition,"%d",client);
+
+	      fstream fichierEnvoi(strcat(cheminFichierEnvoi,partition), fstream::in);
+	      if(!fichierEnvoi.good())
+		{
+		  fichierEnvoi.close();
+		  perror("OuvertureFichier");
+		}
+	      else
+		{
+		  fichierEnvoi.seekg(0,fichierEnvoi.end);
+		  int taille = fichierEnvoi.tellg();
+		  fichierEnvoi.seekg(0,fichierEnvoi.beg);
+		  		  
+		  char * buffer = new char[taille];
+		  struct p p1;
+		  p1.proto = 1;
+		  p1.part = 2;
+		  p1.taille_nom = strlen(f->nomFichier);
+		  p1.taille_fichier = taille;
+		  strcpy(p1.n,f->nomFichier);
+		  char c;
+		  for(int i=strlen(f->nomFichier); i< taille+strlen(f->nomFichier); i++)
+		    {
+		      c = fichierEnvoi.get();
+		      cout << c;
+		      p1.n[i] = c;	
+		    }
+		  cout << endl;
+		  fichierEnvoi.close();
+		  
+		  Sock sockClient = Sock(SOCK_STREAM, 0);
+		  if(sockClient.good()) f->donneeClients->getDonnee(client)->setDesc(sockClient.getsDesc());
+		  else
+		    {
+		      perror("ConnexionClient");
+		      exit(1);
+		    }
+		  cout << "Création de la socket client réussi" << endl;
+		  SockDist sockDistClient = SockDist(inet_ntoa(f->donneeClients->getDonnee(client)->getIp()), (short)f->donneeClients->getDonnee(client)->getPort());
+		  adrSockPub = sockDistClient.getAdrDist();
+		  lgAdrSockPub = sizeof(struct sockaddr_in);
+		  
+		  int connexion = connect(f->donneeClients->getDonnee(client)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
+		  
+		  write(f->donneeClients->getDonnee(client)->getDesc(),&p1,4*sizeof(int)+strlen(f->nomFichier)+taille*sizeof(char));
+		  perror("write");
+		}
+	      cout << "Fichier envoyé" << endl;
+	    }	  
+	}
+      else
+	{
+	  cout << "Fichier introuvable" << endl;
+	}
+    }
 }
 
  void recuperationPartition(int desc)
