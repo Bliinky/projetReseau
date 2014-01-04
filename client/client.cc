@@ -285,7 +285,7 @@ void *threadEnvoyerFichier(void *par)
   struct envoieFichier * f = (struct envoieFichier *)par;
   struct sockaddr_in *adrSockPub = f->adrSockPub;
   int lgAdrSockPub = f->lgAdrSockPub;  
-
+  DonneeClient nouveauClient;
   fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
   char fileName[255];
   bool continuer = true;
@@ -312,9 +312,9 @@ void *threadEnvoyerFichier(void *par)
 	  cout << f->donneeClients->getDonnee().size() << endl;
 	  for(int it = 0; it < f->donneeClients->getDonnee().size(); it++)
 	    { 
-	      DonneeClient nouveauClient = DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
-							f->donneeClients->getDonnee(it)->getPort(),
-							f->donneeClients->getDonnee(it)->getDesc());
+	      nouveauClient = DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
+					   f->donneeClients->getDonnee(it)->getPort(),
+					   f->donneeClients->getDonnee(it)->getDesc());
 	      listeClients.getDonnee().push_back(&nouveauClient);
 	      perror("pushBack");
 	      cout << listeClients.getDonnee().size() << endl;
@@ -485,6 +485,30 @@ void portIpClient(TableauClient* t, int desc)
   
 }
 
+void recherchePartition(int desc)
+{
+  int part;
+  int taille;
+  int port;
+  in_addr ip;
+  read(desc,&part,4);
+  read(desc,&part,4);
+  read(desc,&port,4);
+  read(desc,&ip,4);
+  
+  char nom[taille+1];
+  read(desc,nom,taille);
+  nom[taille] ='\0';
+  struct RecherchePartition* r =(struct RecherchePartition*)malloc(sizeof(struct RecherchePartition));
+  pthread_t id;
+  if(pthread_create(&id,NULL,threadRecherchePartition,(void*)r) != 0)
+    {
+      perror("pthread_create");
+    }
+}
+void *threadRecherchePartition(void *par)
+{
+}
 void *threadReceptionServeurPrin(void *par)
 {
   struct tableauDescServeur *  descServeur= (struct tableauDescServeur *)par;
@@ -499,6 +523,11 @@ void *threadReceptionServeurPrin(void *par)
 	case 2:
 	  {
 	    portIpClient(t,desc);
+	    break;
+	  }
+	case 3:
+	  {
+	    recherchePartition(desc);
 	    break;
 	  }
 	}

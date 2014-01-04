@@ -70,4 +70,6 @@ void suppresionClient(DonneeClient*, struct DescTableauClient*, int);
 void recuperationPartition(int);
 void ecriturePartition(int,char*,char*,int,int);
 int choixAction();
+void recherchePartition(int);
+void * threadRecherchePartition(void*);
 #endif

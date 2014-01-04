@@ -244,8 +244,10 @@ void* thread_partition(void* par)
   for(int i = 0 ; i < parametre_fichier->parametreClient->donneeClients->size() ; i++)
     {
       int desc = parametre_fichier->parametreClient->donneeClients->getDonnee(i)->getDesc();
+      parametre_fichier->fichier.port = parametre_fichier->parametreClient->donneeClients->getDonnee(i)->getPort();
+      parametre_fichier->fichier.ip = parametre_fichier->parametreClient->donneeClients->getDonnee(i)->getIp();
       if(desc != parametre_fichier->parametreClient->descClient)
-	if(-1 == write(desc,&(parametre_fichier->fichier),sizeof(int) * 3 + parametre_fichier->fichier.taille))
+	if(-1 == write(desc,&(parametre_fichier->fichier),sizeof(int) * 4 + sizeof(in_addr) + parametre_fichier->fichier.taille))
 	  cout<<"Erreur write"<<endl;
     }
   pthread_mutex_unlock(&(parametre_fichier->parametreClient->donneeClients->getVerrou()));
