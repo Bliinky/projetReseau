@@ -15,12 +15,10 @@ TableauClient::TableauClient(){
 
 TableauClient::~TableauClient()
 {
-  for(vector<DonneeClient*>::iterator i = donnee.begin();
-      i != donnee.end();
-      ++i)
+  /* for(int i = 0; i < getDonnee().size(); i++)
     {
-      delete *i;
-    }
+      delete getDonnee(i);
+      }*/
 }
 
 vector<DonneeClient*> TableauClient::getDonnee()

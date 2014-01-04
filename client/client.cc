@@ -171,7 +171,6 @@ void Client::rafraichirClient()
   pthread_mutex_lock(&(donneeClients.getVerrou()));
   while(!(donneeClients.getDonnee().empty()))
   {
-    cout<<"yolo"<<endl;
     donneeClients.rmClient(0);
   }
   pthread_mutex_unlock(&(donneeClients.getVerrou()));
@@ -290,9 +289,10 @@ void *threadEnvoyerFichier(void *par)
   fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
   char fileName[255];
   bool continuer = true;
-  while(infoClientFile.getline(fileName,255) && continuer)
+  char * tok;
+  while(continuer && infoClientFile.getline(fileName,255))
     {
-      char * tok;
+      cout << "test"<<endl;
       tok = strtok(fileName,"=");
       if(strcmp(tok,f->nomFichier) == 0)
 	{ 
@@ -310,17 +310,15 @@ void *threadEnvoyerFichier(void *par)
 
 	  pthread_mutex_lock(&f->donneeClients->getVerrou());
 	  TableauClient listeClients;
-	  DonneeClient nouveauClient;
-	  cout << "test2" << endl;
+	  DonneeClient * nouveauClient = new DonneeClient();
 	  for(int it = 0; it < f->donneeClients->getDonnee().size(); it++)
 	    { 
-	      nouveauClient = DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
+	      *nouveauClient = DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
 					    f->donneeClients->getDonnee(it)->getPort(),
 					    f->donneeClients->getDonnee(it)->getDesc());
-	      listeClients.pushClient(&nouveauClient);
+	      listeClients.pushClient(nouveauClient);
 	    }
 	  pthread_mutex_unlock(&f->donneeClients->getVerrou());
-	  cout << "test" << endl;
 
 	  int client = 0;
 
@@ -369,7 +367,6 @@ void *threadEnvoyerFichier(void *par)
 		      c = fichierEnvoi.get();
 		      p1.n[i] = c;	
 		    }
-		  cout << "Fin lecture fichier" << endl;
 		  fichierEnvoi.close();
 		  
 		  Sock sockClient = Sock(SOCK_STREAM, 0);
@@ -379,7 +376,6 @@ void *threadEnvoyerFichier(void *par)
 		      perror("ConnexionClient");
 		      exit(1);
 		    }
-		  cout << "Création de la socket client réussi" << endl;
 		  SockDist sockDistClient = SockDist(inet_ntoa(listeClients.getDonnee(client)->getIp()), (short)listeClients.getDonnee(client)->getPort());
 		  adrSockPub = sockDistClient.getAdrDist();
 		  lgAdrSockPub = sizeof(struct sockaddr_in);
@@ -393,14 +389,15 @@ void *threadEnvoyerFichier(void *par)
 		    }
 		  
 		  write(listeClients.getDonnee(client)->getDesc(),&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
-		  perror("write");
+		  cout << "Partition envoyé au client " << client << endl;
+		  //perror("write");
 		  free(buffer);
 		  client++;
 		}
 	      cout << "Fichier envoyé" << endl;
-	    } cout << "a" << endl;
-	}cout << "b" << endl;
-    }cout << "c" << endl;
+	    }
+	}
+    }
 }
 
  void recuperationPartition(int desc)
