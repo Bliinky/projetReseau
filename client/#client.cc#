@@ -2,7 +2,6 @@
 #include "sockdist.h"
 #include <fstream>
 #include <stdlib.h>
-#include <vector>
 #include "string.h"
 #include "unistd.h"
 #include "pthread.h"
@@ -303,38 +302,24 @@ void *threadEnvoyerFichier(void *par)
 	  cout << "Envoie du fichier : " << cheminFichierEnvoi << endl;
 
 	  int nbPartition = decouperFichier(cheminFichierEnvoi,TAILLE_PARTITION);
-
+	  int client = 0;
 	  strcat(cheminFichierEnvoi,".dos/");
 	  strcat(cheminFichierEnvoi,f->nomFichier);
 
-	  pthread_mutex_lock(&f->donneeClients->getVerrou());
-	  TableauClient listeClients;
-	  cout << f->donneeClients->getDonnee().size() << endl;
-	  for(int it = 0; it < f->donneeClients->getDonnee().size(); it++)
-	    { 
-	      DonneeClient nouveauClient = DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
-							f->donneeClients->getDonnee(it)->getPort(),
-							f->donneeClients->getDonnee(it)->getDesc());
-	      listeClients.getDonnee().push_back(&nouveauClient);
-	      perror("pushBack");
-	      cout << listeClients.getDonnee().size() << endl;
-	      cout << "Client ajouté" << endl;
-	    }
-	  pthread_mutex_unlock(&f->donneeClients->getVerrou());
-
-	  int client = 0;
-
 	  for(int i = 0; i < nbPartition; i++)
 	    {
-	      if(client > listeClients.getDonnee().size())
-		{
-		  client = 0;
-		}
-
 	      char nomFichierPart[255];
 	      char cheminFichierEnvoiPart[255];
 	      strcpy(cheminFichierEnvoiPart,cheminFichierEnvoi);
 	      strcpy(nomFichierPart,f->nomFichier);
+
+	      pthread_mutex_lock(&f->donneeClients->getVerrou());
+	      client = i;
+	      if(client > f->donneeClients->size()-1)
+		{
+		  client = 0;
+		}
+	      pthread_mutex_unlock(&f->donneeClients->getVerrou());
 
 	      char partition[5];
 	      sprintf(partition,"%d",i);
@@ -342,7 +327,7 @@ void *threadEnvoyerFichier(void *par)
 	      
 	      strcat(nomFichierPart,partition);
 
-	      cout << cheminFichierEnvoiPart << endl;
+	      cout << cheminFichierEnvoi << endl;
 	      fstream fichierEnvoi(cheminFichierEnvoiPart, fstream::in);
 	      if(!fichierEnvoi.good())
 		{
@@ -376,31 +361,25 @@ void *threadEnvoyerFichier(void *par)
 		  cout << "Fin lecture fichier" << endl;
 		  fichierEnvoi.close();
 		  
+		  pthread_mutex_lock(&f->donneeClients->getVerrou());
 		  Sock sockClient = Sock(SOCK_STREAM, 0);
-		  if(sockClient.good()) listeClients.getDonnee(client)->setDesc(sockClient.getsDesc());
+		  if(sockClient.good()) f->donneeClients->getDonnee(client)->setDesc(sockClient.getsDesc());
 		  else
 		    {
 		      perror("ConnexionClient");
 		      exit(1);
 		    }
 		  cout << "Création de la socket client réussi" << endl;
-		  SockDist sockDistClient = SockDist(inet_ntoa(listeClients.getDonnee(client)->getIp()), (short)listeClients.getDonnee(client)->getPort());
+		  SockDist sockDistClient = SockDist(inet_ntoa(f->donneeClients->getDonnee(client)->getIp()), (short)f->donneeClients->getDonnee(client)->getPort());
 		  adrSockPub = sockDistClient.getAdrDist();
 		  lgAdrSockPub = sizeof(struct sockaddr_in);
 		  
-		  int connexion = connect(listeClients.getDonnee(client)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
-		  if(connexion != 0)
-		    {
-		      listeClients.getDonnee().erase(listeClients.getDonnee().begin() + client);
-		      perror("Connexion pair echoue");
-		      continue;
-		    }
+		  int connexion = connect(f->donneeClients->getDonnee(client)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
 		  
-		  write(listeClients.getDonnee(client)->getDesc(),&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
+		  write(f->donneeClients->getDonnee(client)->getDesc(),&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
 		  perror("write");
+		  pthread_mutex_unlock(&f->donneeClients->getVerrou());
 		  delete buffer;
-
-		  client++;
 		}
 	      cout << "Fichier envoyé" << endl;
 	    }	  
@@ -441,6 +420,11 @@ void ecriturePartition(int part, char* nom, char* fichier, int taille,int nbPart
      {
        ajouterPartition(nom,part,fichier,taille);
        
+     }
+   action = estRegroupable(nom);
+   if(action)
+     {
+       regroupePartition(nom);
      }
    pthread_mutex_unlock(&(mutexInfoFichier));
  }

@@ -57,8 +57,12 @@ int decouperFichier(const char* nom, int N)
 	  partition++;
 	  free(nom_partition);
 	}
-      fPartition->put(f.get());
-      parcoursNChar = (parcoursNChar + 1)% N;
+      char c = f.get();
+      if(f.good())
+	{
+	  fPartition->put(c);
+	  parcoursNChar = (parcoursNChar + 1)% N;
+	}
     }
   free(nomDossier);
   delete fPartition;
@@ -203,3 +207,116 @@ int suiteCharBuffer(char* buffer, char sep)
 	}
     }
 } 
+
+
+void regroupePartition(char* nom,int part)
+{
+  char p[255];
+  sprintf(p,"%d",part);
+  char n[255];
+  strcpy(n,nom);
+  n[strlen(nom) - strlen(p)] = '\0';
+
+  fstream f(nom,fstream::out);
+  int i = 0;
+  fstream fPar;
+  char nomDos[256];
+  strcpy(nomDos,n);
+  //strcpy(nomDos,"fichiers/");
+  //strcat(nomDos,n);
+  strcat(nomDos,".dos/");
+  
+
+  do
+    {
+      char nomPar[256];
+      char iChar[10];
+      sprintf(iChar,"%d",i);
+      strcpy(nomPar,nomDos);
+      strcat(nomPar,n);
+      strcat(nomPar,iChar);
+      fPar.open(nomPar,fstream::in);
+      if(fPar.fail())
+	{
+	  f.flush();
+	  //Sup dossier
+	  f.close();
+	  return;
+	}
+      else
+	{
+	  while(fPar.good())
+	    {
+	      char c = fPar.get();
+	      if(fPar.good())
+		f.put(c);
+	    }
+	}
+      fPar.close();
+      i++;
+    }while(true);
+}
+
+
+int partitionManquante(char* nom,int part)
+{
+  char p[255];
+  sprintf(p,"%d",part);
+  char n[255];
+  strcpy(n,nom);
+  n[strlen(nom) - strlen(p)] = '\0';
+
+  fstream f("fichiers/infoFichiers.txt",fstream::in);
+  while(f.good())
+    {
+      cout<<"o"<<endl;
+      char line[1000];
+      char* tok;
+      f.getline(line,1000);
+      if(f.good())
+	{
+	  tok = strtok(line,"=");
+	  cout<<n<<" "<<tok<<endl;
+	  if(strcmp(n,tok) == 0)
+	    {
+	      cout<<"u"<<endl;
+	      int nbPartition;
+	      int nbPartitionTot;
+	      
+	      tok = strtok(NULL,";");
+	      nbPartition = atoi(tok);
+	      tok = strtok(NULL,"\\");
+	      nbPartitionTot = atoi(tok);
+	      if(nbPartition >= nbPartitionTot)
+		{
+		  return -1;
+		}
+	      else
+		{
+		  bool aPartition[nbPartitionTot];
+		  for(int i = 0 ; i < nbPartitionTot ; i++)
+		    {
+		      aPartition[i] = false;
+		    }
+		  tok = strtok(NULL,"\\");
+		  while(tok!=NULL)
+		    {
+		      int partition = atoi(tok);
+		      aPartition[partition] = true;
+		      tok = strtok(NULL,"\\");
+		    }
+		  for(int i = 0 ; i < nbPartitionTot ; i++)
+		    {
+		      if(aPartition[i] == false)
+			{
+			  return i;
+			}
+		    }
+		}
+	    }
+	}
+    }
+  
+
+  return -2;
+}
