@@ -223,15 +223,15 @@ void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* para
 void creationThreadPartition(struct DescTableauClient* parametreClient)
 {
   cout<<"Création thread_partition"<<endl;
-  struct ParametreFichier parametre_fichier;
+  struct ParametreFichier * parametre_fichier = (struct ParametreFichier *)malloc(sizeof(struct ParametreFichier));
   pthread_t id;
-  parametre_fichier.parametreClient = parametreClient;
-  parametre_fichier.fichier.proto = 3;
-  read(parametreClient->descClient,&parametre_fichier.fichier.part,4);
-  read(parametreClient->descClient,&parametre_fichier.fichier.taille,4);
-  read(parametreClient->descClient,&parametre_fichier.fichier.nom ,parametre_fichier.fichier.taille);
-  cout<<parametre_fichier.fichier.nom<<endl;
-  if(pthread_create(&id,NULL,thread_partition,(void*)&parametre_fichier))
+  parametre_fichier->parametreClient = parametreClient;
+  parametre_fichier->fichier.proto = 3;
+  read(parametreClient->descClient,&parametre_fichier->fichier.part,4);
+  read(parametreClient->descClient,&parametre_fichier->fichier.taille,4);
+  read(parametreClient->descClient,parametre_fichier->fichier.nom ,parametre_fichier->fichier.taille);
+  cout<<parametre_fichier->fichier.nom<<endl;
+  if(pthread_create(&id,NULL,thread_partition,parametre_fichier))
     {
       cout<<"Erreur thread_partition creation "<<endl;
     }
@@ -250,5 +250,6 @@ void* thread_partition(void* par)
 	if(-1 == write(desc,&(parametre_fichier->fichier),sizeof(int) * 4 + sizeof(in_addr) + parametre_fichier->fichier.taille))
 	  cout<<"Erreur write"<<endl;
     }
+  free(parametre_fichier);
   pthread_mutex_unlock(&(parametre_fichier->parametreClient->donneeClients->getVerrou()));
 }
