@@ -421,6 +421,11 @@ void ecriturePartition(int part, char* nom, char* fichier, int taille,int nbPart
        ajouterPartition(nom,part,fichier,taille);
        
      }
+   action = estRegroupable(nom);
+   if(action)
+     {
+       regroupePartition(nom);
+     }
    pthread_mutex_unlock(&(mutexInfoFichier));
  }
  void ecriturePartitionLeTempsQueLautreMecSeConnecteSurLeServeurCreeParLeClient(int part, char* nom, char* fichier)
