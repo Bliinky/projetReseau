@@ -40,6 +40,13 @@ struct protocoleRecupereFichier
   in_addr ip;
   char nom[255];
 };
+struct protocoleRecupereFichier2
+{
+  int proto;
+  int part;
+  int taille;
+  char nom[255];
+};
 
 struct tableauDescServeur
 {
