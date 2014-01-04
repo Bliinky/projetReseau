@@ -516,7 +516,7 @@ void recherchePartition(int desc)
   r->port = port;
   r->ip = ip;
   strcpy(r->nom,nom);
-  cout << r->part << " " << r->taille << " " <<  r->port << " " << r->port << " " << r->ip << " " << r->nom << endl;
+  //cout << r->part << " " << r->taille << " " <<  r->port << " " << r->port << " " << r->ip << " " << r->nom << endl;
   pthread_t id;
   if(pthread_create(&id,NULL,threadRecherchePartition,(void*)r) != 0)
     {
