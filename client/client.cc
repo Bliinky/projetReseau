@@ -286,7 +286,6 @@ void *threadEnvoyerFichier(void *par)
   struct envoieFichier * f = (struct envoieFichier *)par;
   struct sockaddr_in *adrSockPub = f->adrSockPub;
   int lgAdrSockPub = f->lgAdrSockPub;  
-  DonneeClient nouveauClient;
   fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
   char fileName[255];
   bool continuer = true;
@@ -310,23 +309,18 @@ void *threadEnvoyerFichier(void *par)
 
 	  pthread_mutex_lock(&f->donneeClients->getVerrou());
 	  TableauClient listeClients;
-	  DonneeClient nouveauClient;
+	  DonneeClient *nouveauClient;
 	  cout << "test2" << endl;
 	  for(int it = 0; it < f->donneeClients->getDonnee().size(); it++)
 	    { 
-	      nouveauClient = DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
-<<<<<<< HEAD
+	      nouveauClient = new DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
 					   f->donneeClients->getDonnee(it)->getPort(),
 					   f->donneeClients->getDonnee(it)->getDesc());
-	      listeClients.getDonnee().push_back(&nouveauClient);
 	      perror("pushBack");
 	      cout << listeClients.getDonnee().size() << endl;
 	      cout << "Client ajouté" << endl;
-=======
-					    f->donneeClients->getDonnee(it)->getPort(),
-					    f->donneeClients->getDonnee(it)->getDesc());
-	      listeClients.pushClient(&nouveauClient);
->>>>>>> 2702ef1fc1908f02bbba18ef86b7b0450971cc03
+	      
+	      listeClients.pushClient(nouveauClient);
 	    }
 	  pthread_mutex_unlock(&f->donneeClients->getVerrou());
 	  cout << "test" << endl;
@@ -512,6 +506,15 @@ void recherchePartition(int desc)
 }
 void *threadRecherchePartition(void *par)
 {
+  struct RecherchePartition* rP= (struct RecherchePartition*)par;
+  pthread_mutex_lock(&mutexInfoFichier);
+  if(aPartition)
+    {
+      //Se connecter au mec
+      //Envoyer partition
+    }
+  pthread_mutex_unlock(&mutexInfoFichier);
+  
 }
 void *threadReceptionServeurPrin(void *par)
 {

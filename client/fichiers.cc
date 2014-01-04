@@ -264,7 +264,6 @@ int partitionManquante(char* nom,int part)
   sprintf(p,"%d",part);
   char n[255];
   strcpy(n,nom);
-  n[strlen(nom) - strlen(p)] = '\0';
 
   fstream f("fichiers/infoFichiers.txt",fstream::in);
   while(f.good())
@@ -319,4 +318,40 @@ int partitionManquante(char* nom,int part)
   
 
   return -2;
+}
+
+bool aPartition(char* nom, int part)
+{
+  char p[255];
+  sprintf(p,"%d",part);
+  char partChar[255] = "\\";
+  strcat(partChar,p);
+  strcat(partChar,"\\");
+  fstream f("fichiers/infoFichiers.txt",fstream::in);
+  while(f.good())
+    {
+      char line[1000];
+      char lineCopy[1000];
+      char* tok;
+      f.getline(line,1000);
+      strcpy(lineCopy,line);
+      if(f.good())
+	{
+	  tok = strtok(line,"=");
+	  cout<<nom<<" "<<tok<<endl;
+	  if(strcmp(nom,tok) == 0)
+	    {
+	      cout<<lineCopy<<" "<<partChar<<endl;
+	      if(strstr(lineCopy,partChar) != NULL)
+		{
+		  return true;
+		}
+	      else
+		{
+		  return false;
+		}
+	    }
+	}
+    }
+  return false;
 }
