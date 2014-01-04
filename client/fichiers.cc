@@ -336,10 +336,8 @@ bool aPartition(char* nom, int part)
       if(f.good())
 	{
 	  tok = strtok(line,"=");
-	  cout<<nom<<" "<<tok<<endl;
 	  if(strcmp(nom,tok) == 0)
 	    {
-	      cout<<lineCopy<<" "<<partChar<<endl;
 	      if(strstr(lineCopy,partChar) != NULL)
 		{
 		  return true;

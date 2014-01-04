@@ -17,6 +17,15 @@ struct protocoleEnvoieFichier
   int taille_fichier;
   char n[2000];
 };
+struct protocoleEnvoieFichier2
+{
+  int proto;
+  int part;
+  int taille_nom;
+  int taille_fichier;
+  char n[2000];
+};
+
 //2
 
 struct protocoleRecupereClient

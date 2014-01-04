@@ -161,11 +161,9 @@ void Client::recupererFichier(char* nomFichier)
       req.proto = 3;
       strcpy(req.nom,nomFichier);
       req.taille = strlen(req.nom);
-      cout << partitionManquant.size() << endl;
       for(int i = 0; i < partitionManquant.size(); i++)
 	{
 	  req.part = partitionManquant[i];
-	  cout << req.nom << " "<<  req.taille << " " << req.part << endl;
 	  write(descSockServeur,&req,sizeof(int)*3+req.taille*sizeof(char));	  
 	}      
     }
@@ -339,7 +337,7 @@ void *threadEnvoyerFichier(void *par)
 
 	  int client = 0;
 
-	  for(int i = 0; i < nbPartition; i++)
+	  for(int i = 0; i < nbPartition-1; i++)
 	    {
 	      if(client > listeClients.getDonnee().size()-1)
 		{
@@ -531,12 +529,81 @@ void *threadRecherchePartition(void *par)
   pthread_mutex_lock(&mutexInfoFichier);
   if(aPartition(rP->nom,rP->part))
     {
-      cout << "coucou"<< endl;
-      //Se connecter au mec
-      //Envoyer partition
+      char cheminFichierEnvoi[255];
+      strcpy(cheminFichierEnvoi,"fichiers/");
+      strcat(cheminFichierEnvoi,rP->nom);
+      cout << "Envoie du fichier : " << cheminFichierEnvoi << endl;
+      
+      strcat(cheminFichierEnvoi,".dos/");
+      strcat(cheminFichierEnvoi,rP->nom);
+
+      char nomFichierPart[255];
+      char cheminFichierEnvoiPart[255];
+      strcpy(cheminFichierEnvoiPart,cheminFichierEnvoi);
+      strcpy(nomFichierPart,rP->nom);
+      
+      char partition[5];
+      sprintf(partition,"%d",rP->part);
+      strcat(cheminFichierEnvoiPart,partition);
+      
+      strcat(nomFichierPart,partition);
+      
+      cout << cheminFichierEnvoiPart << endl;
+      fstream fichierEnvoi(cheminFichierEnvoiPart, fstream::in);
+      if(!fichierEnvoi.good())
+	{
+	  fichierEnvoi.close();
+	  perror("OuvertureFichier");
+	}
+      else
+	{
+	  fichierEnvoi.seekg(0,fichierEnvoi.end);
+	  int taille = fichierEnvoi.tellg();
+	  fichierEnvoi.seekg(0,fichierEnvoi.beg);
+	  
+	  char * buffer = (char *)malloc(taille*sizeof(char));
+	  struct protocoleEnvoieFichier2 p1;
+	  p1.proto = 1;
+	  p1.part = rP->part;
+	  p1.taille_nom = strlen(nomFichierPart);
+	  p1.taille_fichier = taille;
+	  strcpy(p1.n,nomFichierPart);
+	  char c;
+	  for(int i=strlen(nomFichierPart); i< taille+strlen(nomFichierPart); i++)
+	    {
+	      c = fichierEnvoi.get();
+	      p1.n[i] = c;	
+	    }
+	  fichierEnvoi.close();
+	  
+	  Sock sockClient = Sock(SOCK_STREAM, 0);
+	  int desc;
+	  if(sockClient.good()) desc = sockClient.getsDesc();
+	  else
+	    {
+	      perror("ConnexionClient");
+	      exit(1);
+	    }
+
+	  SockDist sockDistClient = SockDist(inet_ntoa(rP->ip), (short)rP->port);
+	  struct sockaddr_in *adrSockPub = sockDistClient.getAdrDist();
+	  int lgAdrSockPub = sizeof(struct sockaddr_in);
+	  
+	  int connexion = connect(desc,(struct sockaddr *)adrSockPub, lgAdrSockPub);
+	  if(connexion != 0)
+	    {
+	      perror("Connexion pair echoue");      
+	    }
+	  else
+	    {	  
+	      write(desc,&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
+	      cout << "Partition envoyé au client " << endl;
+	      //perror("write");
+	    }
+	  free(buffer);
+	}
+      pthread_mutex_unlock(&mutexInfoFichier);
     }
-  pthread_mutex_unlock(&mutexInfoFichier);
-  
 }
 void *threadReceptionServeurPrin(void *par)
 {
