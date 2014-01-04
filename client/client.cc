@@ -156,13 +156,17 @@ void Client::recupererFichier(char* nomFichier)
     }
   else
     {
+      vector<int> partitionManquante = partitionManquante(*nomFichier);
       struct protocoleRecupereFichier req;
       req.proto = 3;
-      req.part = 69;
       strcpy(req.nom,nomFichier);
       req.taille = strlen(req.nom);
-      
-      write(descSockServeur,&req,sizeof(int)*3+req.taille);
+
+      for(int i = 0; i < partitionManquante.size(); i++)
+	{
+	  req.part = partitionManquante[i];
+	  write(descSockServeur,&req,sizeof(int)*3+req.taille);	  
+	}      
     }
 }
 
@@ -285,17 +289,18 @@ void *threadEnvoyerFichier(void *par)
   struct envoieFichier * f = (struct envoieFichier *)par;
   struct sockaddr_in *adrSockPub = f->adrSockPub;
   int lgAdrSockPub = f->lgAdrSockPub;  
+  pthread_mutex_lock(&mutexInfoFichier);
   fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
   char fileName[255];
   bool continuer = true;
   char * tok;
   while(continuer && infoClientFile.getline(fileName,255))
     {
-      cout << "test"<<endl;
       tok = strtok(fileName,"=");
       if(strcmp(tok,f->nomFichier) == 0)
 	{ 
 	  continuer = false;
+	  pthread_mutex_unlock(&mutexInfoFichier);
 	  
 	  char cheminFichierEnvoi[255];
 	  strcpy(cheminFichierEnvoi,"fichiers/");
@@ -398,6 +403,8 @@ void *threadEnvoyerFichier(void *par)
 	    }
 	}
     }
+  if(continuer)
+    pthread_mutex_unlock(&mutexInfoFichier);//Si on a pas trouvé le fichier
 }
 
  void recuperationPartition(int desc)
