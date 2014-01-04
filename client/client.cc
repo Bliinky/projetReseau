@@ -217,7 +217,7 @@ void *threadPortEcoute(void *par)
   int *descSockPub = (int *)par;
   TableauClient donneeClients;
   
-  if(listen(*descSockPub,10) != 0)
+  if(listen(*descSockPub,100) != 0)
     {
       cout << "Erreur création de la file d'attente" << endl;
       exit(1);
@@ -322,12 +322,12 @@ void *threadEnvoyerFichier(void *par)
 	      pthread_mutex_unlock(&f->donneeClients->getVerrou());
 
 	      char partition[5];
-	      sprintf(partition,"%d",client);
+	      sprintf(partition,"%d",i);
 	      strcat(cheminFichierEnvoiPart,partition);
 	      
 	      strcat(nomFichierPart,partition);
 
-	      cout << cheminFichierEnvoi << endl;
+	      cout << cheminFichierEnvoiPart << endl;
 	      fstream fichierEnvoi(cheminFichierEnvoiPart, fstream::in);
 	      if(!fichierEnvoi.good())
 		{
@@ -372,6 +372,12 @@ void *threadEnvoyerFichier(void *par)
 		  lgAdrSockPub = sizeof(struct sockaddr_in);
 		  
 		  int connexion = connect(f->donneeClients->getDonnee(client)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
+		  if(connexion != 0)
+		    {
+		      perror("Connexion pair echoue");
+		      pthread_mutex_unlock(&f->donneeClients->getVerrou());
+		      break;
+		    }
 		  
 		  write(f->donneeClients->getDonnee(client)->getDesc(),&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
 		  perror("write");
