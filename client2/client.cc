@@ -339,7 +339,7 @@ void *threadEnvoyerFichier(void *par)
 
 	  int client = 0;
 
-	  for(int i = 0; i < nbPartition-1; i++)
+	  for(int i = 0; i < nbPartition; i++)
 	    {
 	      if(client > listeClients.getDonnee().size()-1)
 		{
