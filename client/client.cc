@@ -614,8 +614,19 @@ void receptionPartitionManquante(int desc)
   nom[taille_nom]='\0';
   fichier[taille_fichier]='\0';
   ecriturePartition(part,nom,fichier,taille_fichier,nbPartition);
-  if(!(partitionManquante(nom).empty()))
-    {
+  
 
+  
+  char p[255];
+  sprintf(p,"%d",part);
+  char partChar[255] = "\\";
+  strcat(partChar,p);
+  strcat(partChar,"\\");
+  char n[taille_nom];
+  strcpy(n,nom);
+  n[strlen(nom) - strlen(p)] = '\0';
+  if(partitionManquante(n).empty())
+    {
+      regroupePartition(n);
     }
 }

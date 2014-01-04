@@ -210,13 +210,13 @@ int suiteCharBuffer(char* buffer, char sep)
 } 
 
 
-void regroupePartition(char* nom,int part)
+void regroupePartition(char* nom)
 {
-  char p[255];
-  sprintf(p,"%d",part);
+  // char p[255];
+  //sprintf(p,"%d",part);
   char n[255];
   strcpy(n,nom);
-  n[strlen(nom) - strlen(p)] = '\0';
+  //n[strlen(nom) - strlen(p)] = '\0';
 
   fstream f(nom,fstream::out);
   int i = 0;
