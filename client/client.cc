@@ -348,11 +348,14 @@ void *threadEnvoyerFichier(void *par)
 		  p1.taille_nom = strlen(nomFichierPart);
 		  p1.taille_fichier = taille;
 		  strcpy(p1.n,nomFichierPart);
+		  cout<<"///////////////////////////////"<<endl;
+		  cout<<"Nom partition "<<p1.n<<" "<<p1.taille_nom<<endl;
+		  cout<<"///////////////////////////////"<<endl;
 		  char c;
 		  for(int i=strlen(nomFichierPart); i< taille+strlen(nomFichierPart); i++)
 		    {
 		      c = fichierEnvoi.get();
-		      cout << c;
+		      //cout << c;
 		      p1.n[i] = c;	
 		    }
 		  cout << "Fin lecture fichier" << endl;
@@ -400,19 +403,23 @@ void *threadEnvoyerFichier(void *par)
    read(desc,&taille_nom,4);
    int taille_fichier;
    read(desc,&taille_fichier,4);
-   cout<<"taille nom fichier "<<taille_nom<<endl;
-   char* nom = (char*)malloc(sizeof(char) * taille_nom);
+   char nom[taille_nom+1];
    read(desc,nom,taille_nom);
-   cout<<"taille fichier"<<taille_fichier<<endl;
-   char* fichier = (char*)malloc(sizeof(char) * taille_fichier);
+   nom[taille_nom]='\0';
+   char fichier[taille_fichier+1];
    read(desc,fichier,taille_fichier);
+   fichier[taille_fichier]='\0';
    ecriturePartition(part,nom,fichier,taille_fichier,nbPartition);
-   free(fichier);
-   free(nom);
+   if(taille_nom < 10){
+   cout<<"//////////////////////////////////"<<endl;
+   cout<<"taille nom fichier "<<taille_nom<<endl;
+   cout<<"NOM "<<nom<<endl;
+   cout<<"taille fichier"<<taille_fichier<<endl;
+   cout<<"//////////////////////////////////"<<endl;}
  }
 void ecriturePartition(int part, char* nom, char* fichier, int taille,int nbPartition)
  {
-   cout<<"Le fichier "<<fichier<<endl;
+   //cout<<"Le fichier "<<fichier<<endl;
    pthread_mutex_lock(&(mutexInfoFichier));
    int action = determineAction(nom,part,nbPartition);
    if(action)
