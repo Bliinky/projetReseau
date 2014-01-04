@@ -156,13 +156,18 @@ void Client::recupererFichier(char* nomFichier)
     }
   else
     {
+      vector<int> partitionManquant = partitionManquante(nomFichier);
       struct protocoleRecupereFichier req;
       req.proto = 3;
-      req.part = 69;
       strcpy(req.nom,nomFichier);
       req.taille = strlen(req.nom);
-      
-      write(descSockServeur,&req,sizeof(int)*3+req.taille);
+      cout << partitionManquant.size() << endl;
+      for(int i = 0; i < partitionManquant.size(); i++)
+	{
+	  cout << partitionManquant[i] << endl;
+	  req.part = partitionManquant[i];
+	  write(descSockServeur,&req,sizeof(int)*3+req.taille);	  
+	}      
     }
 }
 
@@ -290,17 +295,18 @@ void *threadEnvoyerFichier(void *par)
   struct envoieFichier * f = (struct envoieFichier *)par;
   struct sockaddr_in *adrSockPub = f->adrSockPub;
   int lgAdrSockPub = f->lgAdrSockPub;  
+  pthread_mutex_lock(&mutexInfoFichier);
   fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
   char fileName[255];
   bool continuer = true;
   char * tok;
   while(continuer && infoClientFile.getline(fileName,255))
     {
-      cout << "test"<<endl;
       tok = strtok(fileName,"=");
       if(strcmp(tok,f->nomFichier) == 0)
 	{ 
 	  continuer = false;
+	  pthread_mutex_unlock(&mutexInfoFichier);
 	  
 	  char cheminFichierEnvoi[255];
 	  strcpy(cheminFichierEnvoi,"fichiers/");
@@ -313,6 +319,12 @@ void *threadEnvoyerFichier(void *par)
 	  strcat(cheminFichierEnvoi,f->nomFichier);
 
 	  pthread_mutex_lock(&f->donneeClients->getVerrou());
+	  if(f->donneeClients->getDonnee().size() == 0)
+	    {
+	      cout << "Il n'y a pas de pairs connecté (rafraichir liste client ?)" << endl;
+	      pthread_mutex_unlock(&f->donneeClients->getVerrou());
+	      pthread_exit(par);
+	    }
 	  TableauClient listeClients;
 	  DonneeClient * nouveauClient = new DonneeClient();
 	  for(int it = 0; it < f->donneeClients->getDonnee().size(); it++)
@@ -403,6 +415,8 @@ void *threadEnvoyerFichier(void *par)
 	    }
 	}
     }
+  if(continuer)
+    pthread_mutex_unlock(&mutexInfoFichier);//Si on a pas trouvé le fichier
 }
 
  void recuperationPartition(int desc)
@@ -489,7 +503,7 @@ void recherchePartition(int desc)
   int port;
   in_addr ip;
   read(desc,&part,4);
-  read(desc,&part,4);
+  read(desc,&taille,4);
   read(desc,&port,4);
   read(desc,&ip,4);
   
