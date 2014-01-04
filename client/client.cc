@@ -274,6 +274,11 @@ void *threadClient(void *par)
 	    recuperationPartition(parametreClient->descClient);
 	    break;
 	  }
+	case 3:
+	  {
+	    receptionPartitionManquante(parametreClient->descClient);
+	    break;
+	  }
 	}
     }
   suppresionClient(donnee_client,parametreClient,isPresent);
@@ -577,4 +582,26 @@ void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* para
     parametreClient->donneeClients->rmClient(rang);
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
   free(parametreClient);
+}
+
+void receptionPartitionManquante(int desc)
+{
+  int part;
+  int nbPartition = -1;
+  int taille_nom;
+  int taille_fichier;
+  read(desc,&part,4);
+  read(desc,&taille_nom,4);
+  read(desc,&taille_fichier,4);
+  char nom[taille_nom+1];
+  char fichier[taille_fichier+1];
+  read(desc,nom,taille_nom);
+  read(desc,fichier,taille_fichier);
+  nom[taille_nom]='\0';
+  fichier[taille_fichier]='\0';
+  ecriturePartition(part,nom,fichier,taille_fichier,nbPartition);
+  if(!(partitionManquante(nom).empty()))
+    {
+
+    }
 }

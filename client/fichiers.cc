@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <vector>
 using namespace std;
 #include "fichiers.h"
 
@@ -68,7 +68,7 @@ int decouperFichier(const char* nom, int N)
   delete fPartition;
   //f.flush();
   f.close();
-  return partition;
+  return partition + 1;
 }
 
 
