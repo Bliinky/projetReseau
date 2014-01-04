@@ -157,16 +157,16 @@ void Client::recupererFichier(char* nomFichier)
   else
     {
       vector<int> partitionManquant = partitionManquante(nomFichier);
-      struct protocoleRecupereFichier req;
+      struct protocoleRecupereFichier2 req;
       req.proto = 3;
       strcpy(req.nom,nomFichier);
       req.taille = strlen(req.nom);
       cout << partitionManquant.size() << endl;
       for(int i = 0; i < partitionManquant.size(); i++)
 	{
-	  cout << partitionManquant[i] << endl;
 	  req.part = partitionManquant[i];
-	  write(descSockServeur,&req,sizeof(int)*3+req.taille);	  
+	  cout << req.nom << " "<<  req.taille << " " << req.part << endl;
+	  write(descSockServeur,&req,sizeof(int)*3+req.taille*sizeof(char));	  
 	}      
     }
 }
@@ -511,6 +511,11 @@ void recherchePartition(int desc)
   read(desc,nom,taille);
   nom[taille] ='\0';
   struct RecherchePartition* r =(struct RecherchePartition*)malloc(sizeof(struct RecherchePartition));
+  r->part = part;
+  r->taille = taille;
+  r->port = port;
+  r->ip = ip;
+  strcpy(r->nom,nom);
   pthread_t id;
   if(pthread_create(&id,NULL,threadRecherchePartition,(void*)r) != 0)
     {
@@ -521,8 +526,9 @@ void *threadRecherchePartition(void *par)
 {
   struct RecherchePartition* rP= (struct RecherchePartition*)par;
   pthread_mutex_lock(&mutexInfoFichier);
-  if(aPartition)
+  if(aPartition(rP->nom,rP->part))
     {
+      cout << "coucou"<< endl;
       //Se connecter au mec
       //Envoyer partition
     }
