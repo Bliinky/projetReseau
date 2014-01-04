@@ -145,6 +145,7 @@ void Client::envoyerFichier(char* nomFichier)
     {
       perror("EnvoieFichier");
     }
+  cout << "Fin envoie fichier" << endl;
 }
 
 void Client::recupererFichier(char* nomFichier)
@@ -309,24 +310,32 @@ void *threadEnvoyerFichier(void *par)
 
 	  pthread_mutex_lock(&f->donneeClients->getVerrou());
 	  TableauClient listeClients;
-	  cout << f->donneeClients->getDonnee().size() << endl;
+	  DonneeClient nouveauClient;
+	  cout << "test2" << endl;
 	  for(int it = 0; it < f->donneeClients->getDonnee().size(); it++)
 	    { 
 	      nouveauClient = DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
+<<<<<<< HEAD
 					   f->donneeClients->getDonnee(it)->getPort(),
 					   f->donneeClients->getDonnee(it)->getDesc());
 	      listeClients.getDonnee().push_back(&nouveauClient);
 	      perror("pushBack");
 	      cout << listeClients.getDonnee().size() << endl;
 	      cout << "Client ajouté" << endl;
+=======
+					    f->donneeClients->getDonnee(it)->getPort(),
+					    f->donneeClients->getDonnee(it)->getDesc());
+	      listeClients.pushClient(&nouveauClient);
+>>>>>>> 2702ef1fc1908f02bbba18ef86b7b0450971cc03
 	    }
 	  pthread_mutex_unlock(&f->donneeClients->getVerrou());
+	  cout << "test" << endl;
 
 	  int client = 0;
 
 	  for(int i = 0; i < nbPartition; i++)
 	    {
-	      if(client > listeClients.getDonnee().size())
+	      if(client > listeClients.getDonnee().size()-1)
 		{
 		  client = 0;
 		}
@@ -355,7 +364,7 @@ void *threadEnvoyerFichier(void *par)
 		  int taille = fichierEnvoi.tellg();
 		  fichierEnvoi.seekg(0,fichierEnvoi.beg);
 		  		  
-		  char * buffer = new char[taille];
+		  char * buffer = (char *)malloc(taille*sizeof(char));
 		  struct protocoleEnvoieFichier p1;
 		  p1.proto = 1;
 		  p1.part = i;
@@ -363,14 +372,10 @@ void *threadEnvoyerFichier(void *par)
 		  p1.taille_nom = strlen(nomFichierPart);
 		  p1.taille_fichier = taille;
 		  strcpy(p1.n,nomFichierPart);
-		  cout<<"///////////////////////////////"<<endl;
-		  cout<<"Nom partition "<<p1.n<<" "<<p1.taille_nom<<endl;
-		  cout<<"///////////////////////////////"<<endl;
 		  char c;
 		  for(int i=strlen(nomFichierPart); i< taille+strlen(nomFichierPart); i++)
 		    {
 		      c = fichierEnvoi.get();
-		      //cout << c;
 		      p1.n[i] = c;	
 		    }
 		  cout << "Fin lecture fichier" << endl;
@@ -398,14 +403,13 @@ void *threadEnvoyerFichier(void *par)
 		  
 		  write(listeClients.getDonnee(client)->getDesc(),&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
 		  perror("write");
-		  delete buffer;
-
+		  free(buffer);
 		  client++;
 		}
 	      cout << "Fichier envoyé" << endl;
-	    }	  
-	}
-    }
+	    } cout << "a" << endl;
+	}cout << "b" << endl;
+    }cout << "c" << endl;
 }
 
  void recuperationPartition(int desc)
