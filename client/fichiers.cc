@@ -31,7 +31,7 @@ int decouperFichier(const char* nom, int N)
   cout<<nomDossier<<endl;
   fstream f ;
   f.open(nom,fstream::in|fstream::out|fstream::app);
-  rmdir(nomDossier);
+  //rmdir(nomDossier);
   perror("rmdir");
   int dossierF = mkdir(nomDossier,0777);
   perror("mkdir");
