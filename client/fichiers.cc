@@ -258,17 +258,14 @@ void regroupePartition(char* nom,int part)
 }
 
 
-int partitionManquante(char* nom,int part)
+int partitionManquante(char* nom)
 {
-  char p[255];
-  sprintf(p,"%d",part);
   char n[255];
   strcpy(n,nom);
 
   fstream f("fichiers/infoFichiers.txt",fstream::in);
   while(f.good())
     {
-      cout<<"o"<<endl;
       char line[1000];
       char* tok;
       f.getline(line,1000);
@@ -278,7 +275,6 @@ int partitionManquante(char* nom,int part)
 	  cout<<n<<" "<<tok<<endl;
 	  if(strcmp(n,tok) == 0)
 	    {
-	      cout<<"u"<<endl;
 	      int nbPartition;
 	      int nbPartitionTot;
 	      

@@ -7,6 +7,6 @@ int decouperFichier(const char*,int);
 void ajouterPartition(char*,int,char*,int);
 int suiteCharBuffer(char* buffer,char sep);
 void regroupePartition(char*,int);
-int partitionManquante(char*,int);
+int partitionManquante(char*);
 bool aPartition(char*, int);
 #endif
