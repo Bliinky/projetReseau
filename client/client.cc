@@ -285,7 +285,6 @@ void *threadEnvoyerFichier(void *par)
   struct envoieFichier * f = (struct envoieFichier *)par;
   struct sockaddr_in *adrSockPub = f->adrSockPub;
   int lgAdrSockPub = f->lgAdrSockPub;  
-
   fstream infoClientFile("fichiers/infoFichiers.txt", fstream::in);
   char fileName[255];
   bool continuer = true;
@@ -316,6 +315,7 @@ void *threadEnvoyerFichier(void *par)
 	      *nouveauClient = DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
 					    f->donneeClients->getDonnee(it)->getPort(),
 					    f->donneeClients->getDonnee(it)->getDesc());
+
 	      listeClients.pushClient(nouveauClient);
 	    }
 	  pthread_mutex_unlock(&f->donneeClients->getVerrou());
@@ -477,6 +477,39 @@ void portIpClient(TableauClient* t, int desc)
   
 }
 
+void recherchePartition(int desc)
+{
+  int part;
+  int taille;
+  int port;
+  in_addr ip;
+  read(desc,&part,4);
+  read(desc,&part,4);
+  read(desc,&port,4);
+  read(desc,&ip,4);
+  
+  char nom[taille+1];
+  read(desc,nom,taille);
+  nom[taille] ='\0';
+  struct RecherchePartition* r =(struct RecherchePartition*)malloc(sizeof(struct RecherchePartition));
+  pthread_t id;
+  if(pthread_create(&id,NULL,threadRecherchePartition,(void*)r) != 0)
+    {
+      perror("pthread_create");
+    }
+}
+void *threadRecherchePartition(void *par)
+{
+  struct RecherchePartition* rP= (struct RecherchePartition*)par;
+  pthread_mutex_lock(&mutexInfoFichier);
+  if(aPartition)
+    {
+      //Se connecter au mec
+      //Envoyer partition
+    }
+  pthread_mutex_unlock(&mutexInfoFichier);
+  
+}
 void *threadReceptionServeurPrin(void *par)
 {
   struct tableauDescServeur *  descServeur= (struct tableauDescServeur *)par;
@@ -491,6 +524,11 @@ void *threadReceptionServeurPrin(void *par)
 	case 2:
 	  {
 	    portIpClient(t,desc);
+	    break;
+	  }
+	case 3:
+	  {
+	    recherchePartition(desc);
 	    break;
 	  }
 	}

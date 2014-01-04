@@ -18,6 +18,6 @@ using namespace std;
 
 int main()
 {
-  char nom[526]="tot.png2";
-  cout<<partitionManquante(nom,2)<<endl;
+  char nom[526]="tot.png";
+  cout<<aPartition(nom,2)<<endl;
 }

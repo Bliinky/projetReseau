@@ -36,6 +36,8 @@ struct protocoleRecupereFichier
   int proto;
   int part;
   int taille;
+  int port;
+  in_addr ip;
   char nom[255];
 };
 
@@ -57,6 +59,15 @@ struct ParametreFichier
 {
   struct DescTableauClient* parametreClient;
   struct protocoleRecupereFichier fichier;
+};
+
+struct RecherchePartition
+{
+  int part;
+  int taille;
+  int port;
+  in_addr ip;
+  char nom[255];
 };
 
 #endif
