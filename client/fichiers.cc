@@ -257,12 +257,11 @@ void regroupePartition(char* nom,int part)
     }while(true);
 }
 
-
-int partitionManquante(char* nom)
+vector<int> partitionManquante(char* nom)
 {
   char n[255];
   strcpy(n,nom);
-
+  vector<int> v;
   fstream f("fichiers/infoFichiers.txt",fstream::in);
   while(f.good())
     {
@@ -284,12 +283,12 @@ int partitionManquante(char* nom)
 	      nbPartitionTot = atoi(tok);
 	      if(nbPartition >= nbPartitionTot)
 		{
-		  return -1;
+		  return v;
 		}
 	      else
 		{
-		  bool aPartition[nbPartitionTot];
-		  for(int i = 0 ; i < nbPartitionTot ; i++)
+		  bool aPartition[nbPartitionTot+1];
+		  for(int i = 0 ; i < nbPartitionTot +1 ; i++)
 		    {
 		      aPartition[i] = false;
 		    }
@@ -300,21 +299,23 @@ int partitionManquante(char* nom)
 		      aPartition[partition] = true;
 		      tok = strtok(NULL,"\\");
 		    }
-		  for(int i = 0 ; i < nbPartitionTot ; i++)
+		  for(int i = 0 ; i < nbPartitionTot + 1; i++)
 		    {
 		      if(aPartition[i] == false)
 			{
-			  return i;
+			  v.push_back(i);
 			}
 		    }
+		  return v;
 		}
 	    }
 	}
     }
   
 
-  return -2;
+  return v;
 }
+
 
 bool aPartition(char* nom, int part)
 {
