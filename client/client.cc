@@ -156,15 +156,16 @@ void Client::recupererFichier(char* nomFichier)
     }
   else
     {
-      vector<int> partitionManquante = partitionManquante(*nomFichier);
+      vector<int> partitionManquant = partitionManquante(nomFichier);
       struct protocoleRecupereFichier req;
       req.proto = 3;
       strcpy(req.nom,nomFichier);
       req.taille = strlen(req.nom);
-
-      for(int i = 0; i < partitionManquante.size(); i++)
+      cout << partitionManquant.size() << endl;
+      for(int i = 0; i < partitionManquant.size(); i++)
 	{
-	  req.part = partitionManquante[i];
+	  cout << partitionManquant[i] << endl;
+	  req.part = partitionManquant[i];
 	  write(descSockServeur,&req,sizeof(int)*3+req.taille);	  
 	}      
     }
@@ -313,6 +314,12 @@ void *threadEnvoyerFichier(void *par)
 	  strcat(cheminFichierEnvoi,f->nomFichier);
 
 	  pthread_mutex_lock(&f->donneeClients->getVerrou());
+	  if(f->donneeClients->getDonnee().size() == 0)
+	    {
+	      cout << "Il n'y a pas de pairs connecté (rafraichir liste client ?)" << endl;
+	      pthread_mutex_unlock(&f->donneeClients->getVerrou());
+	      pthread_exit(par);
+	    }
 	  TableauClient listeClients;
 	  DonneeClient * nouveauClient = new DonneeClient();
 	  for(int it = 0; it < f->donneeClients->getDonnee().size(); it++)
@@ -491,7 +498,7 @@ void recherchePartition(int desc)
   int port;
   in_addr ip;
   read(desc,&part,4);
-  read(desc,&part,4);
+  read(desc,&taille,4);
   read(desc,&port,4);
   read(desc,&ip,4);
   
