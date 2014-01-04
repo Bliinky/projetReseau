@@ -31,7 +31,8 @@ int decouperFichier(const char* nom, int N)
   cout<<nomDossier<<endl;
   fstream f ;
   f.open(nom,fstream::in|fstream::out|fstream::app);
-  //rmdir(nomDossier);
+  rmdir(nomDossier);
+  perror("rmdir");
   int dossierF = mkdir(nomDossier,0777);
   perror("mkdir");
   fstream* fPartition = NULL; 
@@ -70,9 +71,10 @@ int decouperFichier(const char* nom, int N)
 
 int determineAction(char* nom, int part,int partTot)
 {
+  //cout<<"Je recupere "<<nom<<endl;
    fstream fCopy;
   fCopy.open("fichiers/infoFichiersCopy.txt",fstream::out);
-  perror("open");
+  //perror("open");
   fstream f("fichiers/infoFichiers.txt",fstream::out|fstream::in);
   char p[255];
   sprintf(p,"%d",part);
@@ -80,6 +82,15 @@ int determineAction(char* nom, int part,int partTot)
   strcat(partChar,p);
   strcat(partChar,"\\");
   bool nomIsPresent = false;
+  char n[255];
+  strcpy(n,nom);
+  n[strlen(nom) - strlen(p)] = '\0';
+  /* cout<<"/////////////////////////////////////"<<endl;
+  cout<<"voici n "<<n<<endl;
+  cout<<"voici p "<<p<<" "<<strlen(p)<<endl;
+  cout<<"voici partChar "<<partChar<<" "<<strlen(partChar)<<endl;
+  cout<<"voici nom "<<nom<<" et taille "<<strlen(nom)<<endl;
+  cout<<"/////////////////////////////////////"<<endl;*/
   while(f.good())
     {
       char line[1000];
@@ -90,13 +101,13 @@ int determineAction(char* nom, int part,int partTot)
 	{
 	  strcpy(lineCopy,line);
 	  tok = strtok(lineCopy,"=");
-	  if(strcmp(nom,tok) == 0)
+	  if(strcmp(n,tok) == 0)
 	    {
 	      if(strstr(line,partChar) == NULL)
 		{
 		  char lineAdd[1000];
-		  strcpy(lineAdd,nom);
-		  strcat(line,"=");
+		  strcpy(lineAdd,n);
+		  strcat(lineAdd,"=");
 		  tok = strtok(NULL,";");
 		  int nbPart = atoi(tok);
 		  nbPart++;
@@ -106,8 +117,10 @@ int determineAction(char* nom, int part,int partTot)
 		  strcat(lineAdd,";");
 		  strcat(lineAdd,line + suiteCharBuffer(line,';'));
 		  strcat(lineAdd,partChar+1);
-		  fCopy.write(lineAdd,strlen(line));
+		  strcat(lineAdd,"\n");
+		  fCopy.write(lineAdd,strlen(lineAdd));
 		  nomIsPresent=true;
+		  fCopy.flush();
 		}
 	      else
 		{
@@ -120,20 +133,17 @@ int determineAction(char* nom, int part,int partTot)
 	      strcat(line,"\n");
 	      fCopy.write(line,strlen(line));
 	      fCopy.flush();
-	      perror("write");
+	      //perror("write");
 	    }
 	}
     }
   if(!nomIsPresent)
     {
-      char n[255];
-      strcpy(n,nom);
-      n[strlen(nom) - strlen(p)] = '\0';
       //Création dossier
       char dosNom[255];
       strcpy(dosNom,n);
       strcat(dosNom,".dos/");
-      cout<<"Création dossier "<<dosNom<<endl;
+      //cout<<"Création dossier "<<dosNom<<endl;
       mkdir(dosNom,0777);
 
       //Création ligne infoFichiers
@@ -166,14 +176,12 @@ void ajouterPartition(char* nom,int part, char* fichier, int taille)
   strcpy(n,nom);
   n[strlen(nom) - strlen(p)] = '\0';
   char nomDos[255];
-  cout<<n<<endl;
   strcpy(nomDos,n);
   strcat(nomDos,".dos/");
   strcat(nomDos,nom);
-  cout<<nomDos<<endl;
   fstream f_fichier;
   f_fichier.open(nomDos,fstream::out);
-  perror("open");
+  //perror("open");
   if(f_fichier.bad()) cout<<"error ouverture"<<endl;
   for(int i=0; i < taille; i++)
     {
@@ -181,7 +189,7 @@ void ajouterPartition(char* nom,int part, char* fichier, int taille)
     }
   f_fichier.flush();
   f_fichier.close();
-  cout << "fin de reception partition" << endl;
+  //cout << "fin de reception partition" << endl;
 }
 
 
