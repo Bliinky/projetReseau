@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <vector>
 using namespace std;
 
 
@@ -18,6 +18,7 @@ using namespace std;
 
 int main()
 {
-  char nom[526]="tot.png";
-  cout<<aPartition(nom,2)<<endl;
+  char nom[256] = "tot.png";
+  char nomFichier[256] = "fichiers/tot.png.dos";
+  supFichier(nomFichier,nom);
 }

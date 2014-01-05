@@ -362,31 +362,10 @@ bool aPartition(char* nom, int part)
 }
 void supFichier(char* nomDos,const char* nom)
 {
-  /*int i = 0;
+  int i = 0;
   char nomDosCopy[256];
   char nomConcatener[256];
   char part[10];
-<<<<<<< HEAD
-  sprintf(part,"%d",i);
-  strcpy(nomDosCopy,nomDos);
-  strcat(nomDosCopy,"/");
-  strcat(nomConcatener,nom);
-  strcat(nomConcatener,part);
-  strcat(nomDosCopy,nomConcatener);
-  fstream f(nomDosCopy,fstream::in);
-  cout<<nomDosCopy<<endl;
-  cout<<nom<<endl;
-  while(!f.fail())
-    {
-      return;
-    }
-  else
-    {
-      f.close();
-      remove(nomDosCopy);
-      
-      }*/
-=======
   fstream f;
   do{
     if(i != 0)
@@ -403,7 +382,6 @@ void supFichier(char* nomDos,const char* nom)
     f.open(nomDosCopy,fstream::in);
     i++;
   }while(!f.fail());
->>>>>>> 018b485bddca69dbcd30eed55a7fcbb9261a2cca
 }
 
 
