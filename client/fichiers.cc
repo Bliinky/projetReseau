@@ -299,7 +299,7 @@ vector<int> partitionManquante(char* nom)
 	      else
 		{
 		  bool aPartition[nbPartitionTot];
-		  for(int i = 0 ; i < nbPartitionTot ; i++)
+		  for(int i = 0 ; i < nbPartitionTot + 1 ; i++)
 		    {
 		      aPartition[i] = false;
 		    }
@@ -310,7 +310,7 @@ vector<int> partitionManquante(char* nom)
 		      aPartition[partition] = true;
 		      tok = strtok(NULL,"\\");
 		    }
-		  for(int i = 0 ; i < nbPartitionTot; i++)
+		  for(int i = 0 ; i < nbPartitionTot + 1; i++)
 		    {
 		      if(aPartition[i] == false)
 			{

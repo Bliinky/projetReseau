@@ -274,6 +274,7 @@ void *threadClient(void *par)
 	{
 	case 1: 
 	  {
+	
 	    recuperationPartition(parametreClient->descClient);
 	    break;
 	  }
@@ -300,12 +301,11 @@ void *threadEnvoyerFichier(void *par)
   fstream infoClientFile(cheminFichierEnvoi, fstream::in);
   if(!infoClientFile.good())
     {
-      cout << "Fichier introuvable" << endl;
       pthread_exit(par);
     }
   infoClientFile.close();
   
-  cout << "Envoie du fichier : " << cheminFichierEnvoi << endl;
+
   int nbPartition = decouperFichier(cheminFichierEnvoi,TAILLE_PARTITION);
   
   strcat(cheminFichierEnvoi,".dos/");
@@ -429,13 +429,12 @@ void *threadEnvoyerFichier(void *par)
    char fichier[taille_fichier+1];
    read(desc,fichier,taille_fichier);
    fichier[taille_fichier]='\0';
-   ecriturePartition(part,nom,fichier,taille_fichier,nbPartition);
-   if(taille_nom < 10){
-   cout<<"//////////////////////////////////"<<endl;
+   /*cout<<"//////////////////////////////////"<<endl;
    cout<<"taille nom fichier "<<taille_nom<<endl;
    cout<<"NOM "<<nom<<endl;
    cout<<"taille fichier"<<taille_fichier<<endl;
-   cout<<"//////////////////////////////////"<<endl;}
+   cout<<"//////////////////////////////////"<<endl;*/
+   ecriturePartition(part,nom,fichier,taille_fichier,nbPartition);
  }
 void ecriturePartition(int part, char* nom, char* fichier, int taille,int nbPartition)
  {
