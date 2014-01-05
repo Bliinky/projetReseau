@@ -224,26 +224,28 @@ void regroupePartition(char* nom)
   // char p[255];
   //sprintf(p,"%d",part);
   char n[255];
-  strcpy(n,nom);
+  strcpy(n,"fichiers/");
+  strcat(n,nom);
   //n[strlen(nom) - strlen(p)] = '\0';
-
-  fstream f(nom,fstream::out);
+  cout<<"o "<<n<<endl;
+  fstream f(n,fstream::out);
   int i = 0;
   fstream fPar;
   char nomDos[256];
-  strcpy(nomDos,n);
+  strcpy(nomDos,"fichiers/");
+  strcat(nomDos,nom);
   //strcpy(nomDos,"fichiers/");
   //strcat(nomDos,n);
   strcat(nomDos,".dos/");
   
-
+  cout<<"a "<<nomDos<<endl;
   do
     {
       char nomPar[256];
       char iChar[10];
       sprintf(iChar,"%d",i);
       strcpy(nomPar,nomDos);
-      strcat(nomPar,n);
+      strcat(nomPar,nom);
       strcat(nomPar,iChar);
       fPar.open(nomPar,fstream::in);
       if(fPar.fail())
@@ -289,8 +291,11 @@ vector<int> partitionManquante(char* nom)
 	      
 	      tok = strtok(NULL,";");
 	      nbPartition = atoi(tok);
+	      cout<<"ICIICIC"<<endl;
 	      tok = strtok(NULL,"\\");
+	      cout<<tok<<endl;
 	      nbPartitionTot = atoi(tok);
+	      cout<<nbPartitionTot<<endl;
 	      if(nbPartition >= nbPartitionTot)
 		{
 		  return v;
@@ -404,6 +409,7 @@ void supFichier(char* nomDos)
 
 void decoupageAjout(char* nom, int nbPart)
 {
+  int nbPartCopy;
   fstream f("fichiers/infoFichiers.txt",fstream::out|fstream::in);
   fstream fCopy("fichiers/infoFichiersCopy.txt", fstream::out);
   while(f.good())
@@ -421,10 +427,27 @@ void decoupageAjout(char* nom, int nbPart)
 	      strcat(lineCopy,"\n");
 	      fCopy.write(lineCopy,strlen(lineCopy));
 	    }
+	  else
+	    {
+	      if(tok != NULL)
+		{
+		  tok = strtok(NULL,";");
+		  tok = strtok(NULL,"\\");
+		  nbPartCopy = atoi(tok);
+		}
+	      
+	    }
 	}
     }
   char nbPartChar[10];
-  sprintf(nbPartChar,"%d",nbPart);
+  if(nbPart == -1)
+    {
+      sprintf(nbPartChar,"%d",nbPartCopy);
+    }
+  else
+    {
+      sprintf(nbPartChar,"%d",nbPart);
+    }
   char line[1000];
   strcpy(line,nom);
   strcat(line,"=0;");

@@ -160,7 +160,7 @@ void* thread_client(void* par)
 	}
     }
   suppresionClient(donnee_client,parametreClient,isPresent);
-  pthread_exit(par);
+  pthread_exit(NULL);
 }
 
 
@@ -259,4 +259,5 @@ void* thread_partition(void* par)
     }
   pthread_mutex_unlock(&(parametre_fichier->parametreClient->donneeClients->getVerrou()));
   free(parametre_fichier);
+  pthread_exit(NULL);
 }
