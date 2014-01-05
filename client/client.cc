@@ -295,9 +295,8 @@ void *threadEnvoyerFichier(void *par)
   int lgAdrSockPub = f->lgAdrSockPub;
   char cheminFichierEnvoi[255];
 
-  strcpy(cheminFichierEnvoi,"fichiers/");
+    strcpy(cheminFichierEnvoi,"fichiers/");
   strcat(cheminFichierEnvoi,f->nomFichier);
-
   fstream infoClientFile(cheminFichierEnvoi, fstream::in);
   if(!infoClientFile.good())
     {
@@ -307,7 +306,6 @@ void *threadEnvoyerFichier(void *par)
   infoClientFile.close();
   
   cout << "Envoie du fichier : " << cheminFichierEnvoi << endl;
-  
   int nbPartition = decouperFichier(cheminFichierEnvoi,TAILLE_PARTITION);
   
   strcat(cheminFichierEnvoi,".dos/");
@@ -371,7 +369,7 @@ void *threadEnvoyerFichier(void *par)
 	  
 	  char * buffer = (char *)malloc(taille*sizeof(char));
 	  struct protocoleEnvoieFichier p1;
-	  p1.proto = 3;
+	  p1.proto = 1;
 	  p1.part = i;
 	  p1.nbPartition = nbPartition;
 	  p1.taille_nom = strlen(nomFichierPart);
