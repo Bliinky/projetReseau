@@ -15,7 +15,7 @@ using namespace std;
 #include "fichiers.h"
 
 
-
+//ajouter rmdir
 int decouperFichier(const char* nom, int N)
 {
   char nomFichier[255];
@@ -29,12 +29,14 @@ int decouperFichier(const char* nom, int N)
     }
   strcpy(nomFichier,nom+pos);
   char* nomDossier = (char*)malloc(sizeof(char) * strlen(nom) + 5);
-  strcpy(nomDossier,nom);
+  strcpy(nomDossier,"fichiers/");
+  strcat(nomDossier,nomFichier);
   strcat(nomDossier,".dos/");
   cout<<nomDossier<<endl;
   fstream f ;
+  cout<<"con"<<endl;
   f.open(nom,fstream::in|fstream::out|fstream::app);
-  //rmdir(nomDossier);
+  //supFichier(nomDossier,nom);
   perror("rmdir");
   int dossierF = mkdir(nomDossier,0777);
   perror("mkdir");
@@ -151,7 +153,8 @@ int determineAction(char* nom, int part,int partTot)
     {
       //Création dossier
       char dosNom[255];
-      strcpy(dosNom,n);
+      strcpy(dosNom,"fichiers/");
+      strcat(dosNom,n);
       strcat(dosNom,".dos/");
       //cout<<"Création dossier "<<dosNom<<endl;
       mkdir(dosNom,0777);
@@ -187,7 +190,8 @@ void ajouterPartition(char* nom,int part, char* fichier, int taille)
   strcpy(n,nom);
   n[strlen(nom) - strlen(p)] = '\0';
   char nomDos[255];
-  strcpy(nomDos,n);
+  strcpy(nomDos,"fichiers/");
+  strcat(nomDos,n);
   strcat(nomDos,".dos/");
   strcat(nomDos,nom);
   fstream f_fichier;
@@ -295,7 +299,7 @@ vector<int> partitionManquante(char* nom)
 	      else
 		{
 		  bool aPartition[nbPartitionTot];
-		  for(int i = 0 ; i < nbPartitionTot ; i++)
+		  for(int i = 0 ; i < nbPartitionTot + 1 ; i++)
 		    {
 		      aPartition[i] = false;
 		    }
@@ -306,7 +310,7 @@ vector<int> partitionManquante(char* nom)
 		      aPartition[partition] = true;
 		      tok = strtok(NULL,"\\");
 		    }
-		  for(int i = 0 ; i < nbPartitionTot; i++)
+		  for(int i = 0 ; i < nbPartitionTot + 1; i++)
 		    {
 		      if(aPartition[i] == false)
 			{
@@ -322,7 +326,6 @@ vector<int> partitionManquante(char* nom)
 
   return v;
 }
-
 
 bool aPartition(char* nom, int part)
 {
@@ -357,6 +360,31 @@ bool aPartition(char* nom, int part)
     }
   return false;
 }
+void supFichier(char* nomDos,const char* nom)
+{
+  int i = 0;
+  char nomDosCopy[256];
+  char nomConcatener[256];
+  char part[10];
+  fstream f;
+  do{
+    if(i != 0)
+      {
+	f.close();
+	remove(nomDosCopy);
+      }
+    sprintf(part,"%d",i);
+    strcpy(nomDosCopy,nomDos);
+    strcat(nomDosCopy,"/");
+    strcat(nomConcatener,nom);
+    strcat(nomConcatener,part);
+    strcat(nomDosCopy,nomConcatener);
+    f.open(nomDosCopy,fstream::in);
+    i++;
+  }while(!f.fail());
+}
+
+
 
 void listerFichier()
 {
