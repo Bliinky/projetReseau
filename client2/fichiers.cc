@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <fstream>
 #include <vector>
+#include <sys/msg.h>
 #include <string.h>
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/ipc.h>
 #include <sys/types.h>
 #include <vector>
 using namespace std;
@@ -69,7 +71,7 @@ int decouperFichier(const char* nom, int N)
   delete fPartition;
   //f.flush();
   f.close();
-  return partition + 1;
+  return partition;
 }
 
 
@@ -110,6 +112,8 @@ int determineAction(char* nom, int part,int partTot)
 	    {
 	      if(strstr(line,partChar) == NULL)
 		{
+		  cout<<"yolo"<<endl;
+		  cout<<partChar<<endl;
 		  char lineAdd[1000];
 		  strcpy(lineAdd,n);
 		  strcat(lineAdd,"=");
@@ -122,6 +126,7 @@ int determineAction(char* nom, int part,int partTot)
 		  strcat(lineAdd,";");
 		  strcat(lineAdd,line + suiteCharBuffer(line,';'));
 		  strcat(lineAdd,partChar+1);
+		  //strcat(lineAdd,"\\");
 		  strcat(lineAdd,"\n");
 		  fCopy.write(lineAdd,strlen(lineAdd));
 		  nomIsPresent=true;
@@ -155,18 +160,19 @@ int determineAction(char* nom, int part,int partTot)
       char line[1000];
       char total[10];
       sprintf(total,"%d",partTot);
-      strcpy(line,nom);
+      strcpy(line,n);
       strcat(line,"=");
       strcat(line,"1");
       strcat(line,";");
       strcat(line,total);
       strcat(line,partChar);
+      strcat(line,"\n");
       fCopy.write(line,strlen(line));
     }
-  f.close();
-  fCopy.close();
   fCopy.flush();
   f.flush();
+  f.close();
+  fCopy.close();
   remove("fichiers/infoFichiers.txt");
   rename("fichiers/infoFichiersCopy.txt","fichiers/infoFichiers.txt");
   return 1;
@@ -350,4 +356,66 @@ bool aPartition(char* nom, int part)
 	}
     }
   return false;
+}
+
+void listerFichier()
+{
+  key_t cle = ftok("ftok",NOMBRE);
+  int id=msgget(cle,IPC_CREAT|0666);
+  
+  if(id==-1){
+    id=msgget(cle,0666);
+  }
+  struct nomFichier nom;
+  nom.etiquette = 1;
+  /*nom.nom[0] = 'a';
+  msgsnd(id,&nom,sizeof(nomFichier)-sizeof(long),0);
+  perror("msgsnd");*/
+  fstream f("fichiers/infoFichiers.txt",fstream::out|fstream::in);
+  while(f.good())
+    {
+      char line[1000];
+      char* tok;
+      f.getline(line,1000);
+      if(f.good())
+	{
+	  tok = strtok(line,"=");
+	  cout<<"Voici tok "<<tok<<endl;
+	  strcpy(nom.nom,tok);
+	  nom.nom[strlen(tok)] = '\0';
+	  msgsnd(id,&nom,strlen(tok) + 1,0);
+	  perror("msgsnd");
+	}
+    }
+  f.close();
+  /*while(true)
+    {
+      cout<<"yolo"<<endl;
+      msgrcv(id,&nom,255,1,0);
+      perror("msgRcv");
+      cout<<"Voici le nom de la file "<<nom.nom<<endl;
+      }*/
+}
+
+
+void ajouterPartitionIpc(char* nom, int part)
+{
+  key_t cle = ftok("ftok",NOMBRE);
+  int id=msgget(cle,IPC_CREAT|0666);
+  
+  if(id==-1){
+    id=msgget(cle,0666);
+  }
+  
+  char p[10];
+  sprintf(p,"%d",part);
+  char n[255];
+  strcpy(n,nom);
+  n[strlen(nom) - strlen(p)] = '\0';
+  
+  struct ajouterPartition partit;
+  partit.etiquette = 2;
+  partit.part = part;
+  strcpy(partit.nom,n);
+  msgsnd(id,&partit,strlen(n)+4,0);
 }
