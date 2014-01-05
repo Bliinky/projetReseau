@@ -370,7 +370,7 @@ void *threadEnvoyerFichier(void *par)
 		  		  
 		  char * buffer = (char *)malloc(taille*sizeof(char));
 		  struct protocoleEnvoieFichier p1;
-		  p1.proto = 1;
+		  p1.proto = 3;
 		  p1.part = i;
 		  p1.nbPartition = nbPartition;
 		  p1.taille_nom = strlen(nomFichierPart);
