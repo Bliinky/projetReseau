@@ -34,9 +34,8 @@ int decouperFichier(const char* nom, int N)
   strcat(nomDossier,".dos/");
   cout<<nomDossier<<endl;
   fstream f ;
-  cout<<"con"<<endl;
   f.open(nom,fstream::in|fstream::out|fstream::app);
-  //supFichier(nomDossier,nom);
+  supFichier(nomDossier);
   perror("rmdir");
   int dossierF = mkdir(nomDossier,0777);
   perror("mkdir");
@@ -110,7 +109,7 @@ int determineAction(char* nom, int part,int partTot)
 	{
 	  strcpy(lineCopy,line);
 	  tok = strtok(lineCopy,"=");
-	  if(strcmp(n,tok) == 0)
+	  if(tok != NULL && strcmp(n,tok) == 0)
 	    {
 	      if(strstr(line,partChar) == NULL)
 		{
@@ -283,7 +282,7 @@ vector<int> partitionManquante(char* nom)
 	{
 	  tok = strtok(line,"=");
 	  cout<<n<<" "<<tok<<endl;
-	  if(strcmp(n,tok) == 0)
+	  if(tok!= NULL && strcmp(n,tok) == 0)
 	    {
 	      int nbPartition;
 	      int nbPartitionTot;
@@ -299,7 +298,7 @@ vector<int> partitionManquante(char* nom)
 	      else
 		{
 		  bool aPartition[nbPartitionTot];
-		  for(int i = 0 ; i < nbPartitionTot + 1 ; i++)
+		 for(int i = 0 ; i < nbPartitionTot + 1 ; i++)
 		    {
 		      aPartition[i] = false;
 		    }
@@ -345,7 +344,7 @@ bool aPartition(char* nom, int part)
       if(f.good())
 	{
 	  tok = strtok(line,"=");
-	  if(strcmp(nom,tok) == 0)
+	  if(tok!=NULL && strcmp(nom,tok) == 0)
 	    {
 	      if(strstr(lineCopy,partChar) != NULL)
 		{
@@ -360,9 +359,9 @@ bool aPartition(char* nom, int part)
     }
   return false;
 }
-void supFichier(char* nomDos,const char* nom)
+void supFichier(char* nomDos)
 {
-  int i = 0;
+  /*int i = 0;
   char nomDosCopy[256];
   char nomConcatener[256];
   char part[10];
@@ -381,10 +380,64 @@ void supFichier(char* nomDos,const char* nom)
     strcat(nomDosCopy,nomConcatener);
     f.open(nomDosCopy,fstream::in);
     i++;
-  }while(!f.fail());
+    }while(!f.fail());*/
+  cout<<nomDos<<endl;
+  DIR* dossier =  opendir(nomDos);
+  if(dossier == NULL)
+      return;
+  struct dirent* fichier;
+  vector<char*> v;
+  while((fichier = readdir(dossier)) != NULL){
+    char nomDosFichier[255];
+    strcpy(nomDosFichier,nomDos);
+    strcat(nomDosFichier,fichier->d_name);
+    cout<<nomDosFichier<<endl;
+    remove(nomDosFichier);
+  }
+  closedir(dossier);
+  /*for(int i = 0 ; i < v.size() ; i++)
+    {
+      cout<<v[i]<<endl;
+      remove(v[i]);
+      }*/
 }
 
-
+void decoupageAjout(char* nom, int nbPart)
+{
+  fstream f("fichiers/infoFichiers.txt",fstream::out|fstream::in);
+  fstream fCopy("fichiers/infoFichiersCopy.txt", fstream::out);
+  while(f.good())
+    {
+      char line[1000];
+      char lineCopy[1000];
+      char* tok;
+      f.getline(line,1000);
+      strcpy(lineCopy,line);
+      if(f.good())
+	{
+	  tok = strtok(line,"=");
+	  if(tok!= NULL && !(strcmp(nom,tok) == 0))
+	    {
+	      strcat(lineCopy,"\n");
+	      fCopy.write(lineCopy,strlen(lineCopy));
+	    }
+	}
+    }
+  char nbPartChar[10];
+  sprintf(nbPartChar,"%d",nbPart);
+  char line[1000];
+  strcpy(line,nom);
+  strcat(line,"=0;");
+  strcat(line,nbPartChar);
+  strcat(line,"\\\n");
+  fCopy.write(line,strlen(line));
+  f.flush();
+  fCopy.flush();
+  f.close();
+  fCopy.close();
+  remove("fichiers/infoFichiers.txt");
+  rename("fichiers/infoFichiersCopy.txt","fichiers/infoFichiers.txt");
+}
 
 void listerFichier()
 {

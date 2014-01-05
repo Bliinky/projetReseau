@@ -1,0 +1,2 @@
+toto.png=0;1\
+tot.png=0;60\

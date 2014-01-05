@@ -337,6 +337,7 @@ void *threadEnvoyerFichier(void *par)
       if(listeClients.getDonnee().size() == 0)
 	{
 	  cout << "Il n'y a plus de pair de connecté, toutes les partitions n'ont pas put etre envoyé" << endl;
+	  pthread_exit(par);
 	}
       if(client > listeClients.getDonnee().size()-1)
 	{
@@ -409,7 +410,14 @@ void *threadEnvoyerFichier(void *par)
 	  client++;
 	}
       cout << "Fichier envoyé" << endl;
-    }  
+    }
+  pthread_mutex_lock(&(mutexInfoFichier));
+  strcpy(cheminFichierEnvoi,"fichiers/");
+  strcat(cheminFichierEnvoi,f->nomFichier);
+  strcat(cheminFichierEnvoi,".dos/");
+  supFichier(cheminFichierEnvoi);
+  decoupageAjout(f->nomFichier,nbPartition);
+  pthread_mutex_unlock(&(mutexInfoFichier));
 }
 
 

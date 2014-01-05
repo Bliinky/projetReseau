@@ -23,7 +23,8 @@ int suiteCharBuffer(char* buffer,char sep);
 void regroupePartition(char*);
 vector<int> partitionManquante(char*);
 bool aPartition(char*, int);
-void supFichier(char*,const char*);
+void supFichier(char*);
+void decoupageAjout(char*,int);
 
 void ajouterPartitionIpc(char*,int);
 void listerFichier();

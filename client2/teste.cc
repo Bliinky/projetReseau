@@ -19,6 +19,5 @@ using namespace std;
 int main()
 {
   char nom[256] = "tot.png";
-  char nomFichier[256] = "fichiers/tot.png.dos";
-  supFichier(nomFichier,nom);
+  decoupageAjout(nom,60);
 }
