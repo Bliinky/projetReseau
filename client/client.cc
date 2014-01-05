@@ -449,7 +449,7 @@ void ecriturePartition(int part, char* nom, char* fichier, int taille,int nbPart
    if(action)
      {
        ajouterPartition(nom,part,fichier,taille);
-       
+       ajouterPartitionIpc(nom,part);
      }
    pthread_mutex_unlock(&(mutexInfoFichier));
  }
