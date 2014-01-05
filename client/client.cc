@@ -319,12 +319,11 @@ void *threadEnvoyerFichier(void *par)
       pthread_exit(par);
     }
   TableauClient listeClients;
-  DonneeClient * nouveauClient = new DonneeClient();
   for(int it = 0; it < f->donneeClients->getDonnee().size(); it++)
     { 
-      *nouveauClient = DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
-				    f->donneeClients->getDonnee(it)->getPort(),
-				    f->donneeClients->getDonnee(it)->getDesc());
+      DonneeClient * nouveauClient = new DonneeClient(f->donneeClients->getDonnee(it)->getIp(),
+						      f->donneeClients->getDonnee(it)->getPort(),
+						      f->donneeClients->getDonnee(it)->getDesc());
       
       listeClients.pushClient(nouveauClient);
     }
@@ -384,7 +383,8 @@ void *threadEnvoyerFichier(void *par)
 	  fichierEnvoi.close();
 	  
 	  Sock sockClient = Sock(SOCK_STREAM, 0);
-	  if(sockClient.good()) listeClients.getDonnee(client)->setDesc(sockClient.getsDesc());
+	  int descCli;
+	  if(sockClient.good()) descCli = sockClient.getsDesc();
 	  else
 	    {
 	      perror("ConnexionClient");
@@ -394,7 +394,7 @@ void *threadEnvoyerFichier(void *par)
 	  adrSockPub = sockDistClient.getAdrDist();
 	  lgAdrSockPub = sizeof(struct sockaddr_in);
 	  
-	  int connexion = connect(listeClients.getDonnee(client)->getDesc(),(struct sockaddr *)adrSockPub, lgAdrSockPub);
+	  int connexion = connect(descCli,(struct sockaddr *)adrSockPub, lgAdrSockPub);
 	  if(connexion != 0)
 	    {
 	      listeClients.getDonnee().erase(listeClients.getDonnee().begin() + client);
@@ -402,7 +402,7 @@ void *threadEnvoyerFichier(void *par)
 	      continue;
 	    }
 	  
-	  write(listeClients.getDonnee(client)->getDesc(),&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
+	  write(descCli,&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
 	  cout << "Partition envoyé au client " << client << endl;
 	  //perror("write");
 	  free(buffer);
