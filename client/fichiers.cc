@@ -361,7 +361,7 @@ bool aPartition(char* nom, int part)
 }
 void supFichier(char* nomDos,const char* nom)
 {
-  int i = 0;
+  /*int i = 0;
   char nomDosCopy[256];
   char nomConcatener[256];
   char part[10];
@@ -383,7 +383,7 @@ void supFichier(char* nomDos,const char* nom)
       f.close();
       remove(nomDosCopy);
       
-    }
+      }*/
 }
 
 
