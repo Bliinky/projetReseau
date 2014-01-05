@@ -449,7 +449,7 @@ void ecriturePartition(int part, char* nom, char* fichier, int taille,int nbPart
    if(action)
      {
        ajouterPartition(nom,part,fichier,taille);
-       
+       ajouterPartitionIpc(nom,part);
      }
    pthread_mutex_unlock(&(mutexInfoFichier));
  }
@@ -563,7 +563,7 @@ void *threadRecherchePartition(void *par)
 	  
 	  char * buffer = (char *)malloc(taille*sizeof(char));
 	  struct protocoleEnvoieFichier2 p1;
-	  p1.proto = 1;
+	  p1.proto = 3;
 	  p1.part = rP->part;
 	  p1.taille_nom = strlen(nomFichierPart);
 	  p1.taille_fichier = taille;
