@@ -30,12 +30,13 @@ int decouperFichier(const char* nom, int N)
   strcpy(nomFichier,nom+pos);
   char* nomDossier = (char*)malloc(sizeof(char) * strlen(nom) + 5);
   strcpy(nomDossier,"fichiers/");
-  strcat(nomDossier,nom);
+  strcat(nomDossier,nomFichier);
   strcat(nomDossier,".dos/");
   cout<<nomDossier<<endl;
   fstream f ;
+  cout<<"con"<<endl;
   f.open(nom,fstream::in|fstream::out|fstream::app);
-  supFichier(nomDossier,nom);
+  //supFichier(nomDossier,nom);
   perror("rmdir");
   int dossierF = mkdir(nomDossier,0777);
   perror("mkdir");
@@ -365,6 +366,7 @@ void supFichier(char* nomDos,const char* nom)
   char nomDosCopy[256];
   char nomConcatener[256];
   char part[10];
+<<<<<<< HEAD
   sprintf(part,"%d",i);
   strcpy(nomDosCopy,nomDos);
   strcat(nomDosCopy,"/");
@@ -384,6 +386,24 @@ void supFichier(char* nomDos,const char* nom)
       remove(nomDosCopy);
       
       }*/
+=======
+  fstream f;
+  do{
+    if(i != 0)
+      {
+	f.close();
+	remove(nomDosCopy);
+      }
+    sprintf(part,"%d",i);
+    strcpy(nomDosCopy,nomDos);
+    strcat(nomDosCopy,"/");
+    strcat(nomConcatener,nom);
+    strcat(nomConcatener,part);
+    strcat(nomDosCopy,nomConcatener);
+    f.open(nomDosCopy,fstream::in);
+    i++;
+  }while(!f.fail());
+>>>>>>> 018b485bddca69dbcd30eed55a7fcbb9261a2cca
 }
 
 
