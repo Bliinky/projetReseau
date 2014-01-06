@@ -18,6 +18,7 @@ using namespace std;
 //ajouter rmdir
 int decouperFichier(const char* nom, int N)
 {
+  cout<<"NOM "<<nom<<endl;
   char nomFichier[255];
   int pos=0;
   for(int k = 0 ; k < strlen(nom) ; k++)
@@ -27,7 +28,7 @@ int decouperFichier(const char* nom, int N)
 	  pos=k;
 	}
     }
-  strcpy(nomFichier,nom+pos);
+  strcpy(nomFichier,nom+pos+1);
   char* nomDossier = (char*)malloc(sizeof(char) * strlen(nom) + 5);
   strcpy(nomDossier,"fichiers/");
   strcat(nomDossier,nomFichier);
@@ -36,7 +37,7 @@ int decouperFichier(const char* nom, int N)
   fstream f ;
   f.open(nom,fstream::in|fstream::out|fstream::app);
   supFichier(nomDossier);
-  perror("rmdir");
+  //perror("rmdir");
   int dossierF = mkdir(nomDossier,0777);
   perror("mkdir");
   fstream* fPartition = NULL; 

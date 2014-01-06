@@ -318,9 +318,9 @@ void *threadEnvoyerFichier(void *par)
     }
   infoClientFile.close();
   
-  cout<<"AVANT"<<endl;
+
   int nbPartition = decouperFichier(cheminFichierEnvoi,TAILLE_PARTITION);
-  cout<<"APR7S"<<endl;
+  
   strcat(cheminFichierEnvoi,".dos/");
   strcat(cheminFichierEnvoi,f->nomFichier);
   
