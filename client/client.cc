@@ -13,7 +13,7 @@
 #include "client.h"
 pthread_mutex_t mutexInfoFichier = PTHREAD_MUTEX_INITIALIZER;
 
-#define TAILLE_PARTITION 1000
+#define TAILLE_PARTITION 10000
 
 Client::Client()
 {
@@ -49,10 +49,11 @@ Client::~Client()
 
 void Client::lancerPortEcoute()
 {
-  if(pthread_create(&idThServ, NULL, threadPortEcoute, &descSockPub) != 0)
+  while(pthread_create(&idThServ, NULL, threadPortEcoute, &descSockPub) != 0)
     {
       perror("LancerPortEcoute");
     }
+  cout<<"Le port d'écoute est lancé"<<endl;
 }
 
 void Client::fermeturePortEcoute()
@@ -101,9 +102,10 @@ void Client::connexionServeur()
     {
       cout << "La connexion à " << adresse << ":" << serveurPort << " a échoué !" << endl;
     }
-  
-  cout << "Connexion établie avec le serveur" << endl;  
-  
+  else
+    {
+      cout << "Connexion établie avec le serveur" << endl;  
+    }
   struct protocoleEnvoiePort monPort;
   monPort.proto = 1;
   monPort.port = numeroPort;
@@ -112,9 +114,9 @@ void Client::connexionServeur()
   struct tableauDescServeur* descServeur=(struct tableauDescServeur*)malloc(sizeof(struct tableauDescServeur));;
   descServeur->donneeClients = &donneeClients;
   descServeur->descServeur = descSockServeur;
-  cout<<"non thread "<<	  descSockServeur<<endl;
   if(pthread_create(&idThServPrin,NULL,threadReceptionServeurPrin, descServeur) != 0)
     {
+      free(descServeur);
       perror("ConnexionServeur");
     }
 }
@@ -145,11 +147,15 @@ void Client::envoyerFichier(char* nomFichier)
     {
       perror("EnvoieFichier");
     }
-  cout << "Fin envoie fichier" << endl;
+  else
+    {
+      cout << "Envoie du fichier" << endl;
+    }
 }
 
 void Client::recupererFichier(char* nomFichier)
 {
+  cout<<"Je recupère le fichier "<<nomFichier<<endl;
   if(descSockServeur == -2)
     {
       cout << "Vous n'etes pas connecté au serveur" << endl;
@@ -163,7 +169,7 @@ void Client::recupererFichier(char* nomFichier)
 	{
 	  regroupePartition(nomFichier);
 	  //char nomDos[256];
-	  //strcpy(nomDos,"fichiers/");
+	  //trcpy(nomDos,"fichiers/");
 	  //strcat(nomDos,nomFichier);
 	  //strcat(nomDos,".dos/");
 	  //supFichier(nomDos);
@@ -190,7 +196,7 @@ void Client::rafraichirClient()
     donneeClients.rmClient(0);
   }
   pthread_mutex_unlock(&(donneeClients.getVerrou()));
-  
+  cout<<"Rafraichir les clients"<<endl;
   struct protocoleRecupereClient prot;
   prot.proto = 2;
 
@@ -239,7 +245,10 @@ void *threadPortEcoute(void *par)
       cout << "Erreur création de la file d'attente" << endl;
       exit(1);
     }
-  cout << "Création de la file d'attente réussi" << endl;
+  else
+    {
+      cout << "Création de la file d'attente réussi" << endl;
+    }
 
   struct sockaddr_in sockCV;
   socklen_t lgSockCV = sizeof(struct sockaddr_in);
@@ -255,14 +264,14 @@ void *threadPortEcoute(void *par)
 	}
       else
 	{
-	  cout << "Nouvelle connection" << endl;
+	  cout << "Nouvelle connection sur le port d'écoute" << endl;
 	  idThClient = creationThreadClient(&donneeClients,descSockCV,sockCV);
 	  if((*idThClient) == -1)
 	    {
 	      cout<<"Problème pthread_t"<<endl;
 	      close(descSockCV);
 	    }
-	  
+	  free(idThClient);
 	}
       
       
@@ -273,27 +282,27 @@ void *threadPortEcoute(void *par)
 
 void *threadClient(void *par)
 {
-  cout<<"Il y a un nouveau client de connecté"<<endl;
   struct DescTableauClient* parametreClient = (struct DescTableauClient*)par;
+  int desc = parametreClient->descClient;
   int en_tete = -1;
-  int isPresent;
+  int isPresent=2;
   DonneeClient* donnee_client = new DonneeClient(parametreClient->adresse,parametreClient->descClient);
   pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
   parametreClient->donneeClients->pushClient(donnee_client);
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
-  while((isPresent = read(parametreClient->descClient, &en_tete,4) != 0 && isPresent != -1))
+  while((isPresent = read(desc, &en_tete,4) != 0 && isPresent != -1))
     {
       switch(en_tete)
 	{
 	case 1: 
 	  {
 	
-	    recuperationPartition(parametreClient->descClient);
+	    recuperationPartition(desc);
 	    break;
 	  }
 	case 3:
 	  {
-	    receptionPartitionManquante(parametreClient->descClient);
+	    receptionPartitionManquante(desc);
 	    break;
 	  }
 	}
@@ -302,6 +311,7 @@ void *threadClient(void *par)
   pthread_exit(NULL);
 }
 
+/*
 void *threadEnvoyerFichier(void *par)
 {  
   struct envoieFichier * f = (struct envoieFichier *)par;
@@ -314,13 +324,12 @@ void *threadEnvoyerFichier(void *par)
   fstream infoClientFile(cheminFichierEnvoi, fstream::in);
   if(!infoClientFile.good())
     {
+      free(f);
       pthread_exit(NULL);
     }
   infoClientFile.close();
   
-  cout<<"AVANT"<<endl;
   int nbPartition = decouperFichier(cheminFichierEnvoi,TAILLE_PARTITION);
-  cout<<"APR7S"<<endl;
   strcat(cheminFichierEnvoi,".dos/");
   strcat(cheminFichierEnvoi,f->nomFichier);
   
@@ -336,6 +345,160 @@ void *threadEnvoyerFichier(void *par)
       supFichier(cheminFichierEnvoi);
       decoupageAjout(f->nomFichier,nbPartition);
       pthread_mutex_unlock(&(mutexInfoFichier));
+      free(f);
+      pthread_exit(NULL);
+    }
+  vector<int> v;
+  for(int it = 0; it < f->donneeClients->getDonnee().size(); it++)
+    { 
+      Sock sockClient = Sock(SOCK_STREAM, 0);
+      int descCli;
+      if(sockClient.good()) descCli = sockClient.getsDesc();
+      else
+	{
+	  perror("ConnexionClient");
+	  exit(1);
+	}
+      SockDist sockDistClient = SockDist(inet_ntoa(f->donneeClients->getDonnee(it)->getIp()), (short)f->donneeClients->getDonnee(it)->getPort());
+      adrSockPub = sockDistClient.getAdrDist();
+      lgAdrSockPub = sizeof(struct sockaddr_in);
+      
+      int connexion = connect(descCli,(struct sockaddr *)adrSockPub, lgAdrSockPub);
+      if(connexion != 0)
+	{
+	  perror("Connexion pair echoue");
+	  continue;
+	}
+      v.push_back(descCli);
+    }
+  pthread_mutex_unlock(&f->donneeClients->getVerrou());
+  
+  int client = 0;
+  
+  for(int i = 0; i < nbPartition; i++)
+    {
+      if(v.size() == 0)
+	{
+	  cout << "Il n'y a plus de pair de connecté, toutes les partitions n'ont pas put etre envoyé" << endl;
+	  pthread_mutex_lock(&(mutexInfoFichier));
+	  strcpy(cheminFichierEnvoi,"fichiers/");
+	  strcat(cheminFichierEnvoi,f->nomFichier);
+	  strcat(cheminFichierEnvoi,".dos/");
+	  supFichier(cheminFichierEnvoi);
+	  decoupageAjout(f->nomFichier,nbPartition);
+	  pthread_mutex_unlock(&(mutexInfoFichier));
+	  free(f);
+	  pthread_exit(NULL);
+	}
+      if(client > v.size()-1)
+	{
+	  client = 0;
+	}
+      
+      char nomFichierPart[255];
+      char cheminFichierEnvoiPart[255];
+      strcpy(cheminFichierEnvoiPart,cheminFichierEnvoi);
+      strcpy(nomFichierPart,f->nomFichier);
+      
+      char partition[5];
+      sprintf(partition,"%d",i);
+      strcat(cheminFichierEnvoiPart,partition);
+      
+      strcat(nomFichierPart,partition);
+      
+      fstream fichierEnvoi(cheminFichierEnvoiPart, fstream::in);
+
+      
+
+
+      if(!fichierEnvoi.good())
+	{
+	  fichierEnvoi.close();
+	  perror("OuvertureFichier");
+	}
+      else
+	{
+	  fichierEnvoi.seekg(0,fichierEnvoi.end);
+	  int taille = fichierEnvoi.tellg();
+	  fichierEnvoi.seekg(0,fichierEnvoi.beg);
+	  
+	  char * buffer = (char *)malloc(taille*sizeof(char));
+	  struct protocoleEnvoieFichier p1;
+	  p1.proto = 1;
+	  p1.part = i;
+	  p1.nbPartition = nbPartition;
+	  p1.taille_nom = strlen(nomFichierPart);
+	  p1.taille_fichier = taille;
+	  strcpy(p1.n,nomFichierPart);
+	  char c;
+	  for(int j=strlen(nomFichierPart); j< taille+strlen(nomFichierPart); j++)
+	    {
+	      c = fichierEnvoi.get();
+	      p1.n[i] = c;	
+	    }
+	  fichierEnvoi.close();
+	  
+	  int error = write(v[client],&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
+	  if(error == 0 || error == -1)
+	    {
+	      //perror("write");
+	      close(v[client]);
+	      v.erase(v.begin()+client);
+	      free(buffer);
+	      client++;
+	    }
+	}
+    }
+  pthread_mutex_lock(&(mutexInfoFichier));
+  strcpy(cheminFichierEnvoi,"fichiers/");
+  strcat(cheminFichierEnvoi,f->nomFichier);
+  remove(cheminFichierEnvoi);
+  strcat(cheminFichierEnvoi,".dos/");
+  supFichier(cheminFichierEnvoi);
+  decoupageAjout(f->nomFichier,nbPartition);
+  pthread_mutex_unlock(&(mutexInfoFichier));
+  free(f);
+  for(int i = 0 ; i < v.size() ; i++)
+    {
+      close(v[i]);
+    }
+  pthread_exit(NULL);
+}*/
+
+ void *threadEnvoyerFichier(void *par)
+{  
+  struct envoieFichier * f = (struct envoieFichier *)par;
+  struct sockaddr_in *adrSockPub = f->adrSockPub;
+  int lgAdrSockPub = f->lgAdrSockPub;
+  char cheminFichierEnvoi[255];
+
+    strcpy(cheminFichierEnvoi,"fichiers/");
+  strcat(cheminFichierEnvoi,f->nomFichier);
+  fstream infoClientFile(cheminFichierEnvoi, fstream::in);
+  if(!infoClientFile.good())
+    {
+      free(f);
+      pthread_exit(NULL);
+    }
+  infoClientFile.close();
+  
+  int nbPartition = decouperFichier(cheminFichierEnvoi,TAILLE_PARTITION);
+  strcat(cheminFichierEnvoi,".dos/");
+  strcat(cheminFichierEnvoi,f->nomFichier);
+  
+  pthread_mutex_lock(&f->donneeClients->getVerrou());
+  if(f->donneeClients->getDonnee().size() == 0)
+    {
+      cout << "Il n'y a pas de pairs connecté (rafraichir liste client ?)" << endl;
+      pthread_mutex_unlock(&f->donneeClients->getVerrou());
+      pthread_mutex_lock(&(mutexInfoFichier));
+      strcpy(cheminFichierEnvoi,"fichiers/");
+      strcat(cheminFichierEnvoi,f->nomFichier);
+      strcat(cheminFichierEnvoi,".dos/");
+      supFichier(cheminFichierEnvoi);
+      decoupageAjout(f->nomFichier,nbPartition);
+      pthread_mutex_unlock(&(mutexInfoFichier));
+      free(f);
       pthread_exit(NULL);
     }
   TableauClient listeClients;
@@ -363,6 +526,7 @@ void *threadEnvoyerFichier(void *par)
 	  supFichier(cheminFichierEnvoi);
 	  decoupageAjout(f->nomFichier,nbPartition);
 	  pthread_mutex_unlock(&(mutexInfoFichier));
+	  free(f);
 	  pthread_exit(NULL);
 	}
       if(client > listeClients.getDonnee().size()-1)
@@ -381,7 +545,6 @@ void *threadEnvoyerFichier(void *par)
       
       strcat(nomFichierPart,partition);
       
-      cout << cheminFichierEnvoiPart << endl;
       fstream fichierEnvoi(cheminFichierEnvoiPart, fstream::in);
       if(!fichierEnvoi.good())
 	{
@@ -403,10 +566,10 @@ void *threadEnvoyerFichier(void *par)
 	  p1.taille_fichier = taille;
 	  strcpy(p1.n,nomFichierPart);
 	  char c;
-	  for(int i=strlen(nomFichierPart); i< taille+strlen(nomFichierPart); i++)
+	  for(int j=strlen(nomFichierPart); j< taille+strlen(nomFichierPart); j++)
 	    {
 	      c = fichierEnvoi.get();
-	      p1.n[i] = c;	
+	      p1.n[j] = c;	
 	    }
 	  fichierEnvoi.close();
 	  
@@ -427,18 +590,21 @@ void *threadEnvoyerFichier(void *par)
 	    {
 	      listeClients.getDonnee().erase(listeClients.getDonnee().begin() + client);
 	      perror("Connexion pair echoue");
+	      close(descCli);
+	      free(buffer);
+	      i--;
 	      continue;
 	    }
 	  
 	  write(descCli,&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
-	  cout << "Partition envoyé au client " << client << endl;
 	  //perror("write");
 	  close(descCli);
 	  free(buffer);
 	  client++;
 	}
-      cout << "Fichier envoyé" << endl;
+      
     }
+  cout<<"Envoie du fichier réussi"<<endl;
   pthread_mutex_lock(&(mutexInfoFichier));
   strcpy(cheminFichierEnvoi,"fichiers/");
   strcat(cheminFichierEnvoi,f->nomFichier);
@@ -447,6 +613,8 @@ void *threadEnvoyerFichier(void *par)
   supFichier(cheminFichierEnvoi);
   decoupageAjout(f->nomFichier,nbPartition);
   pthread_mutex_unlock(&(mutexInfoFichier));
+  free(f);
+  pthread_exit(NULL);
 }
 
 
@@ -485,25 +653,7 @@ void ecriturePartition(int part, char* nom, char* fichier, int taille,int nbPart
      }
    pthread_mutex_unlock(&(mutexInfoFichier));
  }
- void ecriturePartitionLeTempsQueLautreMecSeConnecteSurLeServeurCreeParLeClient(int part, char* nom, char* fichier)
- {
-   //Prendre le verrou sur le fichier infofichiers.txt
-   //Chercher le nom de fichier dans se fichier 
-   //Si le fichier existe pas dans infofichier:
-   ////L'ajouter dans infoFichier et crée le dossier correspondant
-   //Sinon
-   ////Regarder si la partition existe deja
-   ////Si la partition existe
-   //////S'arreter
-   ////Sinon
-   //////Ajouter la partition dans le dossier et dans infofichier.txt*
-   /*pthread_mutex_lock(&(mutexInfoFichier));
-   int action = choixAction(nom);
-   if(action)
-     {
-     }
-     pthread_mutex_unlock(&(mutexInfoFichier));*/
- }
+
 
 void portIpClient(TableauClient* t, int desc)
 {
@@ -547,13 +697,15 @@ void recherchePartition(int desc)
   r->ip = ip;
   strcpy(r->nom,nom);
 
-  cout << r->part << " " << r->taille << " " << inet_ntoa(r->ip) << " " <<  r->port << " " << r->nom << endl;
+  //cout << r->part << " " << r->taille << " " << inet_ntoa(r->ip) << " " <<  r->port << " " << r->nom << endl;
 
   pthread_t id;
-  if(pthread_create(&id,NULL,threadRecherchePartition,(void*)r) != 0)
+  while(pthread_create(&id,NULL,threadRecherchePartition,(void*)r) != 0)
     {
       perror("pthread_create");
-    }
+      }
+
+
 }
 void *threadRecherchePartition(void *par)
 {
@@ -564,7 +716,7 @@ void *threadRecherchePartition(void *par)
       char cheminFichierEnvoi[255];
       strcpy(cheminFichierEnvoi,"fichiers/");
       strcat(cheminFichierEnvoi,rP->nom);
-      cout << "Envoie du fichier : " << cheminFichierEnvoi << endl;
+      //cout << "Envoie du fichier : " << cheminFichierEnvoi << endl;
       
       strcat(cheminFichierEnvoi,".dos/");
       strcat(cheminFichierEnvoi,rP->nom);
@@ -580,7 +732,7 @@ void *threadRecherchePartition(void *par)
       
       strcat(nomFichierPart,partition);
       
-      cout << cheminFichierEnvoiPart << endl;
+      //cout << cheminFichierEnvoiPart << endl;
       fstream fichierEnvoi(cheminFichierEnvoiPart, fstream::in);
       if(!fichierEnvoi.good())
 	{
@@ -629,7 +781,7 @@ void *threadRecherchePartition(void *par)
 	  else
 	    {	  
 	      write(desc,&p1,5*sizeof(int)+strlen(nomFichierPart)+taille*sizeof(char));
-	      cout << "Partition envoyé au client " << endl;
+	      //cout << "Partition envoyé au client " << endl;
 	      //perror("write");
 	    }
 	  close(desc);
@@ -637,6 +789,8 @@ void *threadRecherchePartition(void *par)
 	}
     }
   pthread_mutex_unlock(&mutexInfoFichier);
+  free(rP);
+  pthread_exit(NULL);
 }
 void *threadReceptionServeurPrin(void *par)
 {
@@ -661,15 +815,12 @@ void *threadReceptionServeurPrin(void *par)
 	  }
 	}
     }
-  if(fermeture == 0)
-    {
-      perror("ThreadReceptionServeurPrin");
-    }
   if(fermeture == -1)
     {
       perror("ThreadReceptionServeurPrin");
     }
   free(descServeur);
+  pthread_exit(NULL);
 }
 
 pthread_t* creationThreadClient(TableauClient* donneeClients,int descBrCircuitVirtuel,struct sockaddr_in& adresse)
@@ -679,20 +830,18 @@ pthread_t* creationThreadClient(TableauClient* donneeClients,int descBrCircuitVi
   parametreThread->donneeClients = donneeClients;
   parametreThread->descClient = descBrCircuitVirtuel;
   parametreThread->adresse = adresse.sin_addr;
-  if(pthread_create(id,NULL,threadClient,(void*)parametreThread) != 0)
+  while(pthread_create(id,NULL,threadClient,(void*)parametreThread) != 0)
     {
-      cout<<"Erreut thread creation"<<endl;
-      return NULL;
+      perror("pthead_create");
+      //cout<<"Erreut thread creation"<<endl;
+      //return NULL;
     }
-  else
-    {
-      return id;
-    }
+  return id;
 }
 
 void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* parametreClient,int isPresent)
 {
-  cout<<"Suppresion client"<<endl;
+  //cout<<"Suppresion client"<<endl;
   if(isPresent == -1)
     perror("read");
   close(parametreClient->descClient);
@@ -700,7 +849,7 @@ void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* para
   int rang = -1;
   if(donnee_client != NULL)
     rang =  parametreClient->donneeClients->rangClient(donnee_client); 
-  cout<<"rang : "<<rang<<endl;
+  //cout<<"rang : "<<rang<<endl;
   if(rang != -1)
     parametreClient->donneeClients->rmClient(rang);
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
@@ -722,7 +871,6 @@ void receptionPartitionManquante(int desc)
   read(desc,fichier,taille_fichier);
   nom[taille_nom]='\0';
   fichier[taille_fichier]='\0';
-  cout<<"YOLO"<<endl;
   ecriturePartition(part,nom,fichier,taille_fichier,nbPartition);
   
 

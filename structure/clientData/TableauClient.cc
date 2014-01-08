@@ -72,7 +72,6 @@ void TableauClient::rmClient(unsigned short int rang)
 }
 int TableauClient::rangClient(DonneeClient* donnee_client)
 {
-  cout<<"nombre client(TableauClient) "<<this->size()<<endl;
   for(int i = 0 ; i < this->size() ; i ++)
     {
       if(donnee_client == donnee[i])

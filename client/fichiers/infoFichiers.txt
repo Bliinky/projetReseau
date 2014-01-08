@@ -1,2 +1,3 @@
-yoylo.png=10;90\
-tot.png=0;60\
+toto.png=0;1\
+aa.pdf=0;284\
+tot.png=6;6\3\5\4\0\2\1\

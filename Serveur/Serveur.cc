@@ -95,7 +95,7 @@ void Serveur::lancer_serveur()
 	  id = creationThreadClient(descBrCircuitVirtuel,brCircuitVirtuel);
 	  if(id != -1)
 	    {
-	      cout<<"Voici l'id du client "<<descBrCircuitVirtuel<<endl;
+	      cout<<"Nouveau client connecté"<<endl;
 	      donneeThreads.addDonneeThread(id,descBrCircuitVirtuel);
 	    }
 	  else
@@ -167,7 +167,7 @@ void* thread_client(void* par)
 
 void envoieInformationClients(DonneeClient* donnee_client,struct DescTableauClient* parametreClient)
 {
-  cout<<"Envoie les informations des autres clients à notre client traitré dans le thread"<<endl;
+  cout<<"Envoie des ip/port de nos client"<<endl;
   pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
   for(int i = 0 ; i < parametreClient->donneeClients->size() ; i++)
      {
@@ -186,10 +186,9 @@ void envoieInformationClients(DonneeClient* donnee_client,struct DescTableauClie
 
 DonneeClient* recuperationPortClient(struct DescTableauClient* parametreClient)
 {
-  cout<<"Récupération du port du client"<<endl;
+  cout<<"Récupération du numero de port du client"<<endl;
   int numero_port;
   read(parametreClient->descClient,&numero_port,4);
-  cout<<"Le numero port du client est: "<<numero_port<<endl;
   DonneeClient* donnee_client = new DonneeClient(parametreClient->adresse,numero_port,parametreClient->descClient);
   pthread_mutex_lock(&(parametreClient->donneeClients->getVerrou()));
   parametreClient->donneeClients->pushClient(donnee_client);
@@ -207,7 +206,6 @@ void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* para
   int rang = -1;
   if(donnee_client != NULL)
     rang =  parametreClient->donneeClients->rangClient(donnee_client); 
-  cout<<"rang : "<<rang<<endl;
   if(rang != -1)
     parametreClient->donneeClients->rmClient(rang);
   pthread_mutex_unlock(&(parametreClient->donneeClients->getVerrou()));
@@ -222,7 +220,7 @@ void suppresionClient(DonneeClient* donnee_client,struct DescTableauClient* para
 
 void creationThreadPartition(struct DescTableauClient* parametreClient)
 {
-  cout<<"Création thread_partition"<<endl;
+  cout<<"Envoie des demandes des partitions"<<endl;
   struct ParametreFichier * parametre_fichier = (struct ParametreFichier *)malloc(sizeof(struct ParametreFichier));
   pthread_t id;
   parametre_fichier->parametreClient = parametreClient;
@@ -231,10 +229,32 @@ void creationThreadPartition(struct DescTableauClient* parametreClient)
   read(parametreClient->descClient,&parametre_fichier->fichier.taille,4);
   read(parametreClient->descClient,parametre_fichier->fichier.nom ,parametre_fichier->fichier.taille);
   cout<<parametre_fichier->fichier.nom << " " << parametre_fichier->fichier.part << endl;
-  if(pthread_create(&id,NULL,thread_partition,parametre_fichier))
+  /*if(pthread_create(&id,NULL,thread_partition,parametre_fichier))
     {
       cout<<"Erreur thread_partition creation "<<endl;
+      }*/
+
+
+  // struct ParametreFichier* parametre_fichier = (struct ParametreFichier*)par;
+  pthread_mutex_lock(&(parametre_fichier->parametreClient->donneeClients->getVerrou()));
+  for(int i = 0 ; i < parametre_fichier->parametreClient->donneeClients->size() ; i++)
+    {
+      int desc = parametre_fichier->parametreClient->donneeClients->getDonnee(i)->getDesc();
+      if(desc==parametre_fichier->parametreClient->descClient)
+	{
+	  parametre_fichier->fichier.port = parametre_fichier->parametreClient->donneeClients->getDonnee(i)->getPort();
+	  parametre_fichier->fichier.ip = parametre_fichier->parametreClient->donneeClients->getDonnee(i)->getIp();
+	}
     }
+  for(int i = 0 ; i < parametre_fichier->parametreClient->donneeClients->size() ; i++)
+    {
+      int desc = parametre_fichier->parametreClient->donneeClients->getDonnee(i)->getDesc();
+      if(desc != parametre_fichier->parametreClient->descClient)
+	if(-1 == write(desc,&(parametre_fichier->fichier),sizeof(int) * 4 + sizeof(in_addr) + parametre_fichier->fichier.taille))
+	  cout<<"Erreur write"<<endl;
+    }
+  pthread_mutex_unlock(&(parametre_fichier->parametreClient->donneeClients->getVerrou()));
+  free(parametre_fichier);
 }
 	
 void* thread_partition(void* par)
